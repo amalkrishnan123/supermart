@@ -1,0 +1,133 @@
+{% extends "navbar.html" %}
+
+{% block search %}
+<style>
+.fixed-img {
+    height: 200px;
+    object-fit: contain;
+}
+</style>
+
+<form method="get" class="d-flex">
+    <input type="text" name="search" class="form-control mt-4 me-2 mb-1"
+           placeholder="Search here..." value="{{ search }}">
+    <button class="btn btn-warning mt-4 mb-1" type="submit">
+        <i class="bi bi-search"></i>
+    </button>
+</form>
+
+<form method="get" class="text-end">
+    <button type="submit" class="btn btn-link text-white p-0 me-1" style="text-decoration: none;">
+        clear
+    </button>
+</form>
+{% endblock search %}
+
+{% block username %}
+<div class="ms-auto text-end">
+    <h2 class="text-white mb-0">HELLO {{ request.user.username|upper }}</h2>
+</div>
+{% endblock username %}
+
+{% block content %}
+
+<!-- Spacer -->
+<div style="height: 90px;"></div>
+
+<!-- MESSAGE BLOCK -->
+{% if messages %}
+<div class="container mb-3">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} fade show shadow-sm text-center"
+         style="border-radius:10px; font-size:15px;">
+        <strong>{{ message }}</strong>
+    </div>
+    {% endfor %}
+</div>
+
+<script>
+setTimeout(() => {
+    document.querySelectorAll('.alert').forEach(alert => {
+        alert.style.opacity = "0";
+        setTimeout(() => alert.remove(), 600);
+    });
+}, 2000);
+</script>
+{% endif %}
+
+<style>
+.cart-btn:hover {
+    background-color: #ffc107d9;
+    transform: scale(1.05);
+    transition: 0.2s;
+}
+.card-link-wrapper {
+    text-decoration: none;
+    color: inherit;
+}
+.card-link-wrapper:hover {
+    text-decoration: none;
+}
+</style>
+
+<a href="{% url 'view_cart' %}" class="text-decoration-none">
+    <div class="bg-warning text-dark d-inline-flex align-items-center 
+                rounded px-3 py-2 shadow cart-btn">
+        <i class="bi bi-cart fs-4 me-2"></i> Cart
+    </div>
+</a>
+
+<!-- ✅ CENTERED PRODUCT CARDS -->
+<div class="container">
+    <div class="row justify-content-center mt-3 g-4">
+
+        {% for i in product %}
+        <div class="col-lg-4 col-md-6 d-flex justify-content-center">
+
+            <a href="{% url 'product_desc' i.id %}" class="card-link-wrapper">
+            <div class="card shadow-sm mt-3" style="width: 22rem; border-radius: 15px;">
+
+                <img src="{{ i.image.url }}" class="card-img-top fixed-img" alt="...">
+
+                <div class="card-body text-center">
+
+                    <!-- Wishlist -->
+                    <a href="{% url 'toggle_wishlist' i.id %}" class="btn btn-light mb-2">
+                        {% if i.id in wishlist_ids %}
+                            <i class="bi bi-heart-fill fs-3 text-danger"></i>
+                        {% else %}
+                            <i class="bi bi-heart fs-3"></i>
+                        {% endif %}
+                    </a>
+
+                    <h5 class="card-title">{{ i.name|upper }}</h5>
+                    <p class="text-muted">{{ i.category }}</p>
+
+                    <div class="d-flex justify-content-center gap-2 flex-wrap">
+
+                        {% if not item %}
+                        <a href="{% url 'add_to_cart' i.id %}" class="btn btn-sm btn-primary">
+                            <i class="bi bi-cart"></i> Add To Cart
+                        </a>
+                        {% else %}
+                        <button class="btn btn-sm btn-secondary" disabled>
+                            In Cart
+                        </button>
+                        {% endif %}
+
+                        <a href="#" class="btn btn-sm btn-danger">
+                            Buy Now
+                        </a>
+
+                    </div>
+                </div>
+            </div>
+            </a>
+
+        </div>
+        {% endfor %}
+
+    </div>
+</div>
+
+{% endblock content %}

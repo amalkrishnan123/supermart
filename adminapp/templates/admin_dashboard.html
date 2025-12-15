@@ -1,0 +1,58 @@
+{% extends "base_page.html" %}
+{% block content %}
+<h1>Dashboard</h1>
+<div class="container mt-4">
+
+    <div class="card shadow-lg border-0">
+        <div class="card-header bg-primary text-white text-center">
+            <h4 class="mb-0">User List</h4>
+        </div>
+
+        <div class="card-body p-0">
+            <table class="table table-hover table-striped mb-0 align-middle">
+                <thead class="table-dark text-center">
+                    <tr>
+                        <th>Id</th>
+                        <th>Username</th>
+                        <th>Email Id</th>
+                        <th>Mobile</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+
+                <tbody class="text-center">
+                    {% for i in form %}
+                    <tr>
+                        <td>{{ i.id }}</td>
+                        <td>{{ i.user.username }}</td>
+                        <td>{{ i.user.email }}</td>
+                        <td>{{ i.mobile }}</td>
+                        <td>
+                            {% if i.is_active %}
+                                <span class="badge bg-success">Active</span>
+                            {% else %}
+                                <span class="badge bg-danger">Blocked</span>
+                            {% endif %}
+                        </td>
+                        <td>    
+                            {% if i.is_active%}
+                            <a href="{% url "blockuser" i.id%}" class="btn btn-sm btn-outline-primary ms-2">
+                                Block</a>
+                            {% else %}
+                            <a href="{% url "unblockuser" i.id %}" class="btn btn-sm btn-outline-primary ms-2">Unlock</a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+
+            </table>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+
+

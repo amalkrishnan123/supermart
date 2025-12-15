@@ -1,0 +1,38 @@
+{% extends "navbar.html" %}
+{% block content %}
+
+<div class="container mt-5">
+
+    <h2 class="mb-4">My Wishlist</h2>
+
+    <div class="row">
+        {% for item in items %}
+        <div class="col-md-4">
+
+            <div class="card mt-3" style="width: 22rem;">
+                <img src="{{ item.product.image.url }}" class="card-img-top" style="height: 200px; object-fit: contain;">
+
+                <div class="card-body">
+                    
+                    <h5 class="card-title">{{ item.product.name }}</h5>
+
+                    <a href="{% url 'product_desc' item.product.id %}" class="btn btn-sm btn-primary">
+                        View Product
+                    </a>
+
+                    <a href="{% url 'toggle_wishlist' item.product.id %}" class="btn btn-sm btn-danger">
+                        Remove
+                    </a>
+
+                </div>
+            </div>
+
+        </div>
+        {% empty %}
+        <p class="text-muted">Your wishlist is empty.</p>
+        {% endfor %}
+    </div>
+
+</div>
+
+{% endblock %}
