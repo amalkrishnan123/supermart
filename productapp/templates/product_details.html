@@ -56,11 +56,6 @@ setTimeout(() => {
 {% endif %}
 
 <style>
-.cart-btn:hover {
-    background-color: #ffc107d9;
-    transform: scale(1.05);
-    transition: 0.2s;
-}
 .card-link-wrapper {
     text-decoration: none;
     color: inherit;
@@ -70,12 +65,7 @@ setTimeout(() => {
 }
 </style>
 
-<a href="{% url 'view_cart' %}" class="text-decoration-none">
-    <div class="bg-warning text-dark d-inline-flex align-items-center 
-                rounded px-3 py-2 shadow cart-btn">
-        <i class="bi bi-cart fs-4 me-2"></i> Cart
-    </div>
-</a>
+
 
 <!-- ✅ CENTERED PRODUCT CARDS -->
 <div class="container">
@@ -101,23 +91,43 @@ setTimeout(() => {
                     </a>
 
                     <h5 class="card-title">{{ i.name|upper }}</h5>
-                    <p class="text-muted">{{ i.category }}</p>
+                    <h4 class="card-title">Rs:{{ i.price }}</h4>
+                <p class="card-text">{{ i.category|upper }}</p>
+                <h5 class="card-title">{{ i.description}}</h5>
+                <p class="card-text">{{ i.brand|upper}}</p>
 
                     <div class="d-flex justify-content-center gap-2 flex-wrap">
 
                         {% if not item %}
-                        <a href="{% url 'add_to_cart' i.id %}" class="btn btn-sm btn-primary">
-                            <i class="bi bi-cart"></i> Add To Cart
-                        </a>
-                        {% else %}
-                        <button class="btn btn-sm btn-secondary" disabled>
-                            In Cart
-                        </button>
-                        {% endif %}
+        <a href="{% url 'add_to_cart' i.id %}"
+           class="btn btn-sm btn-primary flex-fill text-center">
+            <i class="bi bi-cart me-1"></i> Add To Cart
+        </a>
+    {% else %}
+        <button class="btn btn-sm btn-secondary flex-fill" disabled>
+            In Cart
+        </button>
+    {% endif %}
 
-                        <a href="#" class="btn btn-sm btn-danger">
-                            Buy Now
-                        </a>
+    {% if i.stock > 0 %}
+        <a href="{% url 'buy_now' i.id %}"
+           class="btn btn-sm btn-danger flex-fill text-center">
+            Buy Now
+        </a>
+    {% else %}
+        <button class="btn btn-sm btn-danger flex-fill" disabled>
+            Buy Now
+        </button>
+    {% endif %}
+
+</div>
+
+{% if i.stock == 0 %}
+<p class="text-danger fw-bold mt-2 text-center">
+    Out of Stock
+</p>
+{% endif %}
+
 
                     </div>
                 </div>

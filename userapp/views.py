@@ -3,17 +3,18 @@ from django.contrib.auth import authenticate,login,logout
 from django.contrib import messages
 from . forms import UserForm
 from .models import Customerdetails,CustomerAddress
-from productapp.models import Wishlist
+from productapp.models import Wishlist,CartProduct
 import random
 from django.core.mail import send_mail
 from django.conf import settings
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import User
-from adminapp.models import Product
+from adminapp.models import Product,Order,Category,Brand
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import update_session_auth_hash
 from django.core.paginator import Paginator
 from django.views.decorators.cache import never_cache
+from django.db.models import Q
 
 
 # Create your views here.
@@ -90,8 +91,6 @@ def login_page(request):
 @login_required
 def user_dashboard(request):
     cust=Customerdetails.objects.filter(user=request.user).first()
-    wishlist_ids = Wishlist.objects.filter(user=request.user).values_list('product_id', flat=True)
-    
     if cust is None:
         cust = Customerdetails.objects.create(
             user=request.user,
@@ -101,18 +100,33 @@ def user_dashboard(request):
         )
     if cust.is_active==False:
         return redirect('login_view')
+    wishlist_ids = Wishlist.objects.filter(user=request.user).values_list('product_id', flat=True)
+    categorys=Category.objects.all()
+    brands=Brand.objects.all() 
+    products = Product.objects.filter(is_available=True)
+    brand=request.GET.get('brand')
+    if brand:
+        products=Product.objects.filter(brand__id=brand)
+    category=request.GET.get('category')
+    if category:
+        products=Product.objects.filter(category__id=category)
+    price = request.GET.get('price')
+    if price == '1':
+        products = products.filter(price__gte=500, price__lte=1500)
+    elif price == '2':
+        products = products.filter(price__gte=1500, price__lte=2500)
+    elif price == '3':
+        products = products.filter(price__gte=2500, price__lte=3500)
+    elif price == '4':
+        products = products.filter(price__gt=3500)
     search=request.GET.get('search')
     if search:
-        product=Product.objects.filter(name__icontains=search,is_available=True)
-        paginator=Paginator(product,6)
-        page_no=request.GET.get('page')
-        page=paginator.get_page(page_no)
-    else:
-        product=Product.objects.filter(is_available=True).order_by('-created_at')
-        paginator=Paginator(product,6)
-        page_no=request.GET.get('page')
-        page=paginator.get_page(page_no)
-    return render(request,'user_dashboard.html',{'product':page,'wishlist_ids':list(wishlist_ids)})
+        products = products.filter(name__icontains=search)
+    products = products.order_by('-created_at')
+    paginator = Paginator(products, 6)
+    page_no = request.GET.get('page')
+    page = paginator.get_page(page_no)
+    return render(request,'user_dashboard.html',{'product':page,'wishlist_ids':list(wishlist_ids),'cat':categorys,'brand':brands})
 
 @never_cache
 def logout_user(request):
@@ -167,6 +181,55 @@ def edit_user_details(request):
             address.save()
         return redirect('profile')
     return render(request,'edit_address.html',{'address':address,'customer':customer})
+
+@login_required
+def my_orders(request):
+    customer = get_object_or_404(Customerdetails, user=request.user)
+    orders = Order.objects.filter(user=customer).order_by('-created_at')
+    return render(request, 'my_orders.html', {'orders': orders})
+
+@login_required
+def confirmation(request):
+    cart_items = CartProduct.objects.filter(cart__user=request.user)
+    # if not cart_items.exists():
+    #     messages.error(request, "Your cart is empty. Add at least one product to continue.")
+    #     return redirect('view_cart')
+    details=get_object_or_404(Customerdetails,user=request.user)
+    # if not details.address:
+    #     messages.error(
+    #         request,
+    #         "Please add your address before proceeding with the order."
+    #     )
+    #     return redirect('profile') 
+    return render(request,'order_confirmation.html',{'details':details})
+
+#this is for product purchase from cart side
+@login_required
+def place_order(request):
+    if request.method == "POST":
+        customer = get_object_or_404(Customerdetails, user=request.user)
+        cart_items = CartProduct.objects.filter(cart__user=request.user)
+        if not cart_items.exists():
+            messages.error(request, "Your cart is empty.")
+            return redirect('view_cart')
+        for item in cart_items:
+            Order.objects.create(
+                user=customer,
+                product=item.product,
+                quantity=item.quantity,
+                price=item.product.price,
+                total_amount=item.product.price * item.quantity,
+                status='pending'
+            )
+            item.product.stock-=item.quantity
+            item.product.save()
+        # clear cart after placing order
+        cart_items.delete()
+        messages.success(request, "Order placed successfully!")
+        return redirect('my_order')
+    
+
+
 
 
 

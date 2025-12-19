@@ -18,6 +18,12 @@ urlpatterns = [
     path('user_profile/',views.user_profile,name='profile'),
     path('user_address/',views.user_address,name='add_address'),
     path('user_edit_address/',views.edit_user_details,name='edit_address'),
+    path('orders/',views.my_orders,name='my_order'),
+    path('order_confirm',views.confirmation,name='order_confirm'),
+    path('place-order/', views.place_order, name='place_order'),
+    
+
+
     
 
 ]

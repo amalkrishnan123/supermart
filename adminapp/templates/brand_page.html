@@ -17,28 +17,29 @@
 
     <!-- HEADER -->
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h4 class="page-title mb-0">Category Management</h4>
-        <a href="{% url 'add_category' %}" class="btn btn-success">
-            <i class="bi bi-plus-circle me-1"></i> Add Category
+        <h4 class="page-title mb-0">Brand Management</h4>
+        <a href="{% url 'add_brand' %}" class="btn btn-success">
+            <i class="bi bi-plus-circle me-1"></i> Add Brand
         </a>
     </div>
 
-    <!-- CATEGORY TABLE -->
+    <!-- BRAND TABLE -->
     <div class="card shadow-sm">
         <div class="card-body p-0">
 
             <table class="table table-bordered table-hover mb-0">
                 <thead class="table-dark">
                     <tr>
-                        <th style="width: 35%">Category</th>
+                        <th style="width: 35%">Brand</th>
                         <th style="width: 65%">Actions</th>
                     </tr>
                 </thead>
 
                 <tbody>
-                    {% for i in category %}
+                    {% for i in brand %}
                     <tr>
                         <td class="fw-semibold">{{ i.name }}</td>
+
                         <td>
                             <div class="d-flex flex-wrap gap-2">
 
@@ -58,7 +59,7 @@
 
                                 <!-- BLOCK -->
                                 {% if i.is_available %}
-                                <a href="{% url 'block_category' i.id %}"
+                                <a href="{% url 'block_brand' i.id %}"
                                    class="btn btn-sm btn-warning action-btn">
                                     <i class="bi bi-ban"></i> Block
                                 </a>
@@ -69,7 +70,7 @@
                                 {% endif %}
 
                                 <!-- UNBLOCK -->
-                                <a href="{% url 'unblock_category' i.id %}"
+                                <a href="{% url 'unblock_brand' i.id %}"
                                    class="btn btn-sm btn-success action-btn">
                                     Unblock
                                 </a>
@@ -79,27 +80,33 @@
                             <div class="modal fade" id="editModal{{ i.id }}" tabindex="-1">
                                 <div class="modal-dialog modal-dialog-centered">
                                     <div class="modal-content">
-                                        <form method="post" action="{% url 'edit_category' i.id %}">
+                                        <form method="post" action="{% url 'edit_brand' i.id %}">
                                             {% csrf_token %}
                                             <div class="modal-header">
-                                                <h5 class="modal-title">Edit Category</h5>
+                                                <h5 class="modal-title">Edit Brand</h5>
                                                 <button type="button" class="btn-close"
                                                         data-bs-dismiss="modal"></button>
                                             </div>
 
                                             <div class="modal-body">
                                                 <div class="mb-3">
-                                                    <label class="form-label">Category Name</label>
-                                                    <input type="text" name="name"
+                                                    <label class="form-label">Brand Name</label>
+                                                    <input type="text"
+                                                           name="name"
                                                            class="form-control"
-                                                           value="{{ i.name }}" required>
+                                                           value="{{ i.name }}"
+                                                           required>
                                                 </div>
                                             </div>
 
                                             <div class="modal-footer">
-                                                <button type="button" class="btn btn-secondary"
-                                                        data-bs-dismiss="modal">Close</button>
-                                                <button type="submit" class="btn btn-primary">
+                                                <button type="button"
+                                                        class="btn btn-secondary"
+                                                        data-bs-dismiss="modal">
+                                                    Close
+                                                </button>
+                                                <button type="submit"
+                                                        class="btn btn-primary">
                                                     Save Changes
                                                 </button>
                                             </div>
@@ -113,7 +120,7 @@
                                 <div class="modal-dialog modal-dialog-centered">
                                     <div class="modal-content">
                                         <form method="post"
-                                              action="{% url 'delete_category' i.id %}">
+                                              action="{% url 'delete_brand' i.id %}">
                                             {% csrf_token %}
                                             <div class="modal-header">
                                                 <h5 class="modal-title text-danger">
@@ -146,10 +153,12 @@
 
                         </td>
                     </tr>
+
                     {% empty %}
                     <tr>
-                        <td colspan="2" class="text-center text-muted py-4">
-                            No categories found.
+                        <td colspan="2"
+                            class="text-center text-muted py-4">
+                            No brands found.
                         </td>
                     </tr>
                     {% endfor %}

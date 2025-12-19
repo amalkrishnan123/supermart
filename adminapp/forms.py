@@ -1,5 +1,5 @@
 from django.forms import ModelForm
-from .models import Category,Product
+from .models import Category,Product,Brand
 class Category_form(ModelForm):
     class Meta:
         model=Category
@@ -10,4 +10,8 @@ class Product_form(ModelForm):
         model=Product
         fields='__all__'
 
+class Brand_form(ModelForm):
+    class Meta:
+        model=Brand
+        fields='__all__'
     

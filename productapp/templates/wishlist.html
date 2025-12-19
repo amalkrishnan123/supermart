@@ -1,4 +1,38 @@
 {% extends "navbar.html" %}
+{% block search %}
+<style>
+.fixed-img {
+    height: 200px;      
+    object-fit: contain; 
+}
+.card-link-wrapper {
+    text-decoration: none; 
+    color: inherit;
+}
+.card-link-wrapper:hover {
+    text-decoration: none;
+}
+</style>
+
+<form method="get" class="d-flex">
+    <input type="text" name="search" class="form-control mt-4 me-2 mb-1"
+           placeholder="Search here..." value="{{ search }}">
+    <button class="btn btn-warning mt-4 mb-1" type="submit">
+        <i class="bi bi-search"></i>
+    </button>
+</form>
+
+<form method="get" class="text-end">
+    <button type="submit" class="btn btn-link text-white p-0 me-1" style="text-decoration: none;">
+        clear
+    </button>
+</form>
+{% endblock search %}
+{% block username %}
+<div class="ms-auto text-end">
+    <h2 class="text-white mb-0">HELLO {{ request.user.username|upper }}</h2>
+</div>
+{% endblock username %}
 {% block content %}
 
 <div class="container mt-5">
@@ -22,6 +56,10 @@
 
                     <a href="{% url 'toggle_wishlist' item.product.id %}" class="btn btn-sm btn-danger">
                         Remove
+                    </a>
+
+                    <a href="{% url 'add_to_cart' item.product.id %}" class="btn btn-sm btn-primary">
+                        Add to cart
                     </a>
 
                 </div>

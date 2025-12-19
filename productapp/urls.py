@@ -10,6 +10,9 @@ urlpatterns = [
     path('decrease_qty/<int:id>/', views.decrease_qty, name='decrease_qty'),
     path('toggle_wishlist/<int:id>', views.toggle_wishlist, name='toggle_wishlist'),
     path('wishlist/', views.wishlist_page, name='view_wishlist'),
-    
+    path('buy-now/<int:id>/', views.buy_now, name='buy_now'),
+    path('increase_qty_buy/<int:id>/', views.increase_qty_buy_now, name='increase_qty_buy'),
+    path('decrease_qty_buy/<int:id>/', views.decrease_qty_buy, name='decrease_qty_buy'),
+
     
 ]

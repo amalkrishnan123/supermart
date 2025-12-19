@@ -1,33 +1,14 @@
 {% extends "navbar.html" %}
 
 {% block search %}
-<style>
-.fixed-img {
-    height: 200px;      
-    object-fit: contain; 
-}
-.cart-btn:hover {
-    background-color: #ffc107d9;
-    transform: scale(1.05);
-    transition: 0.2s;
-}
-.card-link-wrapper {
-    text-decoration: none; 
-    color: inherit;
-}
-.card-link-wrapper:hover {
-    text-decoration: none;
-}
-</style>
-
 <form method="get" class="d-flex">
     <input type="text" name="search" class="form-control mt-4 me-2 mb-1"
-           placeholder="Search here..." value="{{ search }}">
+           placeholder="Search products..."
+           value="{{ request.GET.search }}">
     <button class="btn btn-warning mt-4 mb-1" type="submit">
         <i class="bi bi-search"></i>
     </button>
 </form>
-
 <form method="get" class="text-end">
     <button type="submit" class="btn btn-link text-white p-0 me-1" style="text-decoration: none;">
         clear
@@ -37,124 +18,189 @@
 
 {% block username %}
 <div class="ms-auto text-end">
-    <h2 class="text-white mb-0">HELLO {{ request.user.username|upper }}</h2>
+    <h5 class="text-white mb-0">HELLO {{ request.user.username|upper }}</h5>
 </div>
 {% endblock username %}
 
 {% block content %}
 
 <style>
-    .cart-container {
-        margin-top: 40px;
-    }
-    .alert {
-        border-radius: 10px;
-        font-size: 15px;
-        padding: 12px 18px;
-    }
+.fixed-img {
+    height: 200px;
+    object-fit: contain;
+}
+
+.card-link-wrapper {
+    text-decoration: none;
+    color: inherit;
+}
+
+.card-link-wrapper:hover {
+    color: inherit;
+}
+
+.filter-card {
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.product-card {
+    border-radius: 15px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.product-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 18px rgba(0,0,0,0.12);
+}
 </style>
 
-<!-- Spacer to avoid being hidden behind fixed-top navbar -->
-<div style="height: 90px;"></div>
+<!-- Spacer -->
+<div style="height:90px;"></div>
 
-<!-- Message Block -->
-{% if messages %}
-<div class="container mb-3">
-    {% for message in messages %}
-        <div class="alert alert-{{ message.tags }} fade show shadow-sm" role="alert">
-            <strong>{{ message }}</strong>
+<div class="container">
+
+    <!--  MESSAGE BLOCK (auto hide after 1 second) -->
+    {% if messages %}
+    <div class="mb-3">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} shadow-sm wishlist-alert">
+            {{ message }}
         </div>
-    {% endfor %}
-</div>
-
-<script>
-setTimeout(function() {
-    let alerts = document.querySelectorAll('.alert');
-    alerts.forEach(function(alert) {
-        alert.style.transition = "opacity 0.5s ease";
-        alert.style.opacity = "0";
-        setTimeout(() => alert.remove(), 600);
-    });
-}, 2000);
-</script>
-{% endif %}
-
-<!-- Main Page Content -->
-<div class="container cart-container">
-
-<a href="{% url 'view_cart' %}" class="text-decoration-none">
-    <div class="bg-warning text-dark d-inline-flex align-items-center justify-content-center 
-                rounded px-3 py-2 shadow cart-btn" style="cursor:pointer;">
-        <i class="bi bi-cart fs-4 me-2"></i> Cart
+        {% endfor %}
     </div>
-</a> 
 
-<div class="row">
-    {% for i in product %}
-    <div class="col-md-4">
+    <script>
+        setTimeout(function () {
+            const alerts = document.querySelectorAll('.wishlist-alert');
+            alerts.forEach(alert => {
+                alert.style.transition = "opacity 0.5s ease";
+                alert.style.opacity = "0";
+                setTimeout(() => alert.remove(), 500);
+            });
+        }, 1000); 
+    </script>
+    {% endif %}
 
-        <a href="{% url 'product_desc' i.id %}" class="card-link-wrapper">
-        <div class="card mt-4" style="width: 22rem;">
+    <div class="row">
 
-            <img src="{{ i.image.url }}" class="card-img-top fixed-img" alt="...">
+        <!-- FILTER SIDEBAR -->
+        <div class="col-md-3">
+            <div class="card filter-card p-3">
+                <form method="get">
 
-            <div class="card-body">
+                    <h5 class="mb-3">Filter Products</h5>
 
-                <!-- Wishlist Toggle Button -->
-                <a href="{% url 'toggle_wishlist' i.id %}" class="btn btn-light">
-                    {% if i.id in wishlist_ids %}
-                        <i class="bi bi-heart-fill" style="font-size:30px; color:red;"></i>
-                    {% else %}
-                        <i class="bi bi-heart" style="font-size:30px;"></i>
-                    {% endif %}
-                </a>
+                    <label class="fw-semibold">Category</label>
+                    <select name="category" class="form-select mb-3">
+                        <option value="">All Categories</option>
+                        {% for i in cat %}
+                        <option value="{{ i.id }}">{{ i.name }}</option>
+                        {% endfor %}
+                    </select>
 
-                <h5 class="card-title">{{ i.name|upper }}</h5>
-                <p class="card-text">{{ i.category }}</p>
+                    <label class="fw-semibold">Brand</label>
+                    <select name="brand" class="form-select mb-3">
+                        <option value="">All Brands</option>
+                        {% for i in brand %}
+                        <option value="{{ i.id }}">{{ i.name }}</option>
+                        {% endfor %}
+                    </select>
+
+                    <label class="fw-semibold">Price</label>
+                    <select name="price" class="form-select mb-3">
+                        <option value="">All Prices</option>
+                        <option value="1">₹500 – ₹1500</option>
+                        <option value="2">₹1500 – ₹2500</option>
+                        <option value="3">₹2500 – ₹3500</option>
+                        <option value="4">Above ₹3500</option>
+                    </select>
+
+                    <button type="submit" class="btn btn-warning w-100">
+                        Apply Filters
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- PRODUCT GRID -->
+        <div class="col-md-9">
+            <div class="row g-4">
+
+                {% for i in product %}
+                <div class="col-md-4">
+
+                    <div class="card product-card position-relative h-100">
+
+                        <!-- Wishlist Button -->
+                        <a href="{% url 'toggle_wishlist' i.id %}"
+                           class="btn btn-light position-absolute top-0 end-0 m-2">
+                            {% if i.id in wishlist_ids %}
+                                <i class="bi bi-heart-fill text-danger fs-5"></i>
+                            {% else %}
+                                <i class="bi bi-heart fs-5"></i>
+                            {% endif %}
+                        </a>
+
+                        <a href="{% url 'product_desc' i.id %}" class="card-link-wrapper">
+                            <img src="{{ i.image.url }}" class="card-img-top fixed-img">
+
+                            <div class="card-body">
+                                <h6 class="fw-bold">{{ i.name|upper }}</h6>
+                                <p class="mb-1 text-muted">{{ i.category }}</p>
+                                <p class="mb-1 text-muted">{{ i.brand }}</p>
+                                <h6 class="fw-bold">₹ {{ i.price }}</h6>
+
+                                {% if i.stock > 10 %}
+                                    <span class="badge bg-success">
+                                        In Stock ({{ i.stock }})
+                                    </span>
+                                {% elif i.stock > 0 %}
+                                    <span class="badge bg-warning text-dark">
+                                        Limited Stock ({{ i.stock }})
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-danger">
+                                        Out of Stock
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </a>
+
+                    </div>
+                </div>
+                {% endfor %}
 
             </div>
-
         </div>
-        </a>
 
     </div>
-    {% endfor %}
 </div>
 
-</div>
-
-<!-- Pagination -->
-<nav aria-label="Page navigation">
+<!-- PAGINATION -->
+<nav class="mt-5">
     <ul class="pagination justify-content-center">
 
         {% if product.has_previous %}
-            <li class="page-item">
-                <a class="page-link" href="?page={{ product.previous_page_number }}&search={{ search }}">
-                    Previous
-                </a>
-            </li>
+        <li class="page-item">
+            <a class="page-link" href="?page={{ product.previous_page_number }}">
+                Previous
+            </a>
+        </li>
         {% endif %}
 
         {% for num in product.paginator.page_range %}
-            {% if product.number == num %}
-                <li class="page-item active">
-                    <span class="page-link">{{ num }}</span>
-                </li>
-            {% else %}
-                <li class="page-item">
-                    <a class="page-link" href="?page={{ num }}&search={{ search }}">
-                        {{ num }}
-                    </a>
-                </li>
-            {% endif %}
+        <li class="page-item {% if product.number == num %}active{% endif %}">
+            <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+        </li>
         {% endfor %}
 
         {% if product.has_next %}
-            <li class="page-item">
-                <a class="page-link" href="?page={{ product.next_page_number }}&search={{ search }}">
-                    Next
-                </a>
-            </li>
+        <li class="page-item">
+            <a class="page-link" href="?page={{ product.next_page_number }}">
+                Next
+            </a>
+        </li>
         {% endif %}
 
     </ul>
