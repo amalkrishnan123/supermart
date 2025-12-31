@@ -5,11 +5,11 @@ from django.contrib.auth import views as auth_views
 
 
 urlpatterns = [
-    path('',views.login_page,name='login_view'),
+    path('login/',views.login_page,name='login_view'),
     path('user_logout',views.logout_user,name='logout_view'),
     path('user_registration/',views.user_register,name='register'),
     path('user_register_page/',views.user_register,name='register_user'),
-    path('user_dashboard/',views.user_dashboard,name='user_dashboard'),
+    path('logged_in_user_dash',views.user_dashboard,name='user_dashboard'),
     path('verify_otp/<int:user_id>',views.verify_otp,name='otp_verification'),
     path('password_reset',auth_views.PasswordResetView.as_view(template_name='password_reset_form.html'),name='password_reset'),
     path('password_reset_done',auth_views.PasswordResetDoneView.as_view(template_name='password_reset_done.html'),name='password_reset_done'),
@@ -21,6 +21,7 @@ urlpatterns = [
     path('orders/',views.my_orders,name='my_order'),
     path('order_confirm',views.confirmation,name='order_confirm'),
     path('place-order/', views.place_order, name='place_order'),
+    path('',views.user_main_page,name='main_home')
     
 
 

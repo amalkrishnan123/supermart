@@ -1,54 +1,125 @@
 {% extends "navbar.html" %}
-{% load socialaccount %}
+{% load static %}
 
 {% block navtag %}
-<nav class="navbar navbar-expand-lg bg-dark py-4">
-    <a class="navbar-brand text-warning" href="#">Welcome to my Super Mart</a>
+<nav class="navbar navbar-expand-lg bg-dark fixed-top">
+    <div class="container">
+        <a class="navbar-brand text-warning fw-semibold" href="#">
+            Welcome to My Super Mart
+        </a>
+    </div>
 </nav>
 {% endblock navtag %}
+
 {% block content %}
 <style>
-    .cart-container{
-        margin-top:500px;
+    /* ===== BACKGROUND ===== */
+    body {
+        background-image: url("{% static 'images/bg1.jpg' %}");
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-position: center;
+    }
+
+    /* ===== CENTER WRAPPER ===== */
+    .login-wrapper {
+        min-height: calc(100vh - 70px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* ===== DARK LOGIN CARD ===== */
+    .login-card {
+        width: 360px;
+        border-radius: 14px;
+        background: rgba(20, 20, 20, 0.85); /* DARK GLASS */
+        backdrop-filter: blur(8px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+        color: #ffffff;
+    }
+
+    .login-card label {
+        color: #f8f9fa;
+    }
+
+    .login-card input {
+        background: rgba(255, 255, 255, 0.12);
+        border: 1px solid rgba(255,255,255,0.25);
+        color: #ffffff;
+    }
+
+    .login-card input::placeholder {
+        color: #cccccc;
+    }
+
+    .login-card input:focus {
+        background: rgba(255, 255, 255, 0.18);
+        border-color: #0d6efd;
+        color: #ffffff;
+        box-shadow: none;
+    }
+
+    .login-card a {
+        color: #0d6efd;
+    }
+
+    .login-card a:hover {
+        text-decoration: underline;
     }
 </style>
-<div class="container cart_container mt-4 d-flex justify-content-center">
-    <div class="card p-4 shadow" style="width: 350px;">
+
+<div class="login-wrapper">
+    <div class="card login-card p-4">
+
         {% if messages %}
-    {% for message in messages %}
-        {% if message.tags != 'success' %}
-            <div class="alert alert-danger">{{ message }}</div>
+            {% for message in messages %}
+                {% if message.tags != 'success' %}
+                    <div class="alert alert-danger">
+                        {{ message }}
+                    </div>
+                {% endif %}
+            {% endfor %}
         {% endif %}
-    {% endfor %}
-{% endif %}
+
         <form method="post">
             {% csrf_token %}
+
             <div class="mb-3">
-                <label class="form-label text-primary fw-bold">Username:</label>
-                <input type="text" name="username" class="form-control" placeholder="Enter Username" autocomplete="off">
+                <label class="form-label fw-semibold">
+                    Username
+                </label>
+                <input type="text" name="username"
+                       class="form-control"
+                       placeholder="Enter username"
+                       autocomplete="off">
             </div>
 
             <div class="mb-3">
-                <label class="form-label text-primary fw-bold">Password:</label>
-                <input type="password" name="password" class="form-control" placeholder="Enter Password" autocomplete="off">
+                <label class="form-label fw-semibold">
+                    Password
+                </label>
+                <input type="password" name="password"
+                       class="form-control"
+                       placeholder="Enter password"
+                       autocomplete="off">
             </div>
 
-            <button type="submit" class="btn btn-primary w-100 mt-2">Login</button>
+            <button type="submit" class="btn btn-primary w-100 mt-2">
+                Login
+            </button>
         </form>
 
-        <a href="{% url 'register_user' %}" class="btn btn-primary w-100 mt-3">Register</a>
+        <a href="{% url 'register_user' %}"
+           class="btn btn-outline-light w-100 mt-3">
+            Register
+        </a>
 
-        <div class="mt-2 text-center">
-            <a href="{% url 'password_reset' %}" class="text-decoration-none">Forgot Password?</a>
+        <div class="text-center mt-3">
+            <a href="{% url 'password_reset' %}" class="text-decoration-none">
+                Forgot Password?
+            </a>
         </div>
-        <div class="mt-2 text-center">
-        {% load socialaccount %}
-        {% comment %} <a href="{% provider_login_url 'google' %}" class="btn btn-danger w-100 mt-2"><i class="bi bi-google"></i>
-            Login with Google
-        </a> {% endcomment %}
-
-       </div>
-
 
     </div>
 </div>

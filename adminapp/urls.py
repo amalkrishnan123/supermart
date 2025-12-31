@@ -25,6 +25,8 @@ urlpatterns = [
     path('block_user/<int:id>',views.admin_block_user,name='blockuser'),
     path('unblock_user/<int:id>',views.admin_unblock_user,name='unblockuser'),
     path('logout_admin/',views.admin_logout,name='logout_admin'),
+    path('admin_orders/',views.admin_orders,name='admin_order_page'),
+    path('admin_update_status/<int:id>/<int:pro_id>/<str:status>/',views.admin_update_status,name='admin_status_update'),
     
 
     

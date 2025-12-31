@@ -1,61 +1,102 @@
 from django.shortcuts import render,redirect
 from .models import CartProduct,Cart,Wishlist
-from adminapp.models import Product
+from adminapp.models import Product,Category,Brand
 from django.shortcuts import get_object_or_404
 from django.contrib import messages
 
 
 # Create your views here.
-def product_details(request,id):
-    cart, created = Cart.objects.get_or_create(user=request.user)
-    wishlist_ids = Wishlist.objects.filter(user=request.user).values_list('product_id', flat=True)
-    items = CartProduct.objects.filter(cart=cart)
-    pro=CartProduct.objects.filter(product__id=id).first()
-    search=request.GET.get('search')
-    if search:
-        product=Product.objects.filter(name__icontains=search,is_available=True)
-    else:
-        product=Product.objects.filter(is_available=True,id=id)
-    return render(request,'product_details.html',{'product':product,'item':pro,'wishlist_ids': list(wishlist_ids)})
-
-def cart_page(request):
-    cart, created = Cart.objects.get_or_create(user=request.user)
-    items = CartProduct.objects.filter(cart=cart)
-
-    # Calculate total per item
-    for item in items:
-        item.total = item.product.price * item.quantity
-
-    # ✅ ONLY IN-STOCK ITEMS
-    in_stock_items = items.filter(product__stock__gt=0)
-
-    # ✅ Total ONLY from in-stock items
-    total_amount = sum(
-        item.product.price * item.quantity
-        for item in in_stock_items
-    )
-
-    # ✅ Checkout allowed if at least one in-stock item exists
-    can_checkout = in_stock_items.exists()
+def product_details(request, id):
+    product = Product.objects.filter(id=id, is_available=True).first()
+    cart_item = None
+    wishlist_ids = []
+    if request.user.is_authenticated:
+        cart, created = Cart.objects.get_or_create(user=request.user)
+        wishlist_ids = list(
+            Wishlist.objects.filter(user=request.user)
+            .values_list('product_id', flat=True)
+        )
+        cart_item = CartProduct.objects.filter(
+            cart=cart,
+            product_id=id
+        ).first()
 
     return render(
         request,
-        'cart_items.html',
+        'product_details.html',
         {
-            'cart_items': items,          # show all (including out-of-stock)
-            'total_amount': total_amount, # price of only in-stock items
-            'can_checkout': can_checkout,
+            'product': product,
+            'item': cart_item,
+            'wishlist_ids': wishlist_ids,
         }
     )
 
 
+def cart_page(request):
+    if not request.user.is_authenticated:
+        return redirect('login_view')
+    cart = Cart.objects.get(user=request.user)
+    cart_items = CartProduct.objects.filter(
+        cart=cart
+    ).select_related(
+        'product', 'product__category', 'product__brand'
+    )
+
+    # SEARCH (cart only)
+    search = request.GET.get('search')
+    if search:
+        cart_items = cart_items.filter(
+            product__name__icontains=search
+        )
+
+    # CATEGORY FILTER
+    category = request.GET.get('category')
+    if category:
+        cart_items = cart_items.filter(
+            product__category__id=category
+        )
+
+    # BRAND FILTER
+    brand = request.GET.get('brand')
+    if brand:
+        cart_items = cart_items.filter(
+            product__brand__id=brand
+        )
+
+    # PRICE FILTER
+    price = request.GET.get('price')
+    if price == '1':
+        cart_items = cart_items.filter(product__price__gte=500, product__price__lte=1500)
+    elif price == '2':
+        cart_items = cart_items.filter(product__price__gte=1500, product__price__lte=2500)
+    elif price == '3':
+        cart_items = cart_items.filter(product__price__gte=2500, product__price__lte=3500)
+    elif price == '4':
+        cart_items = cart_items.filter(product__price__gt=3500)
+
+    total_amount = sum(item.total for item in cart_items)
+    can_checkout = cart_items.filter(product__stock__gt=0).exists()
+
+    return render(request, 'cart_items.html', {
+        'cart_items': cart_items,
+        'total_amount': total_amount,
+        'can_checkout': can_checkout,
+        'cat': Category.objects.all(),
+        'brand': Brand.objects.all(),
+    })
+
+
 def add_to_cart(request, id):
+    if not request.user.is_authenticated:
+        return redirect('login_view')
     product = get_object_or_404(Product, id=id)
     cart, created = Cart.objects.get_or_create(user=request.user)
     cart_item, created = CartProduct.objects.get_or_create(cart=cart,product=product)
     return redirect('product_desc',id)
 
 def remove_from_cart(request, id):
+    if not request.user.is_authenticated:
+        return redirect('login_view')
     cart = Cart.objects.get(user=request.user)
     item = get_object_or_404(CartProduct, id=id, cart=cart)
     item.delete()
@@ -98,11 +139,53 @@ def toggle_wishlist(request, id):
 def wishlist_page(request):
     if not request.user.is_authenticated:
         return redirect('login_view')
-    items = Wishlist.objects.filter(user=request.user)
-    return render(request, 'wishlist.html', {'items': items})
+    # Base queryset: ONLY wishlist items of logged-in user
+    items = Wishlist.objects.filter(
+        user=request.user
+    ).select_related(
+        'product', 'product__category', 'product__brand'
+    )
+
+    # SEARCH (wishlist only)
+    search = request.GET.get('search')
+    if search:
+        items = items.filter(product__name__icontains=search)
+
+    # CATEGORY FILTER
+    category = request.GET.get('category')
+    if category:
+        items = items.filter(product__category__id=category)
+
+    # BRAND FILTER
+    brand = request.GET.get('brand')
+    if brand:
+        items = items.filter(product__brand__id=brand)
+
+    # PRICE FILTER
+    price = request.GET.get('price')
+    if price == '1':
+        items = items.filter(product__price__gte=500, product__price__lte=1500)
+    elif price == '2':
+        items = items.filter(product__price__gte=1500, product__price__lte=2500)
+    elif price == '3':
+        items = items.filter(product__price__gte=2500, product__price__lte=3500)
+    elif price == '4':
+        items = items.filter(product__price__gt=3500)
+
+    return render(
+        request,
+        'wishlist.html',
+        {
+            'items': items,
+            'cat': Category.objects.all(),
+            'brand': Brand.objects.all(),
+        }
+    )
 
 
 def buy_now(request, id):
+    if not request.user.is_authenticated:
+        return redirect('login_view')
     product = get_object_or_404(Product, id=id)
     cart, _ = Cart.objects.get_or_create(user=request.user)
     item, created = CartProduct.objects.get_or_create(

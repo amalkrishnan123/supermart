@@ -1,6 +1,6 @@
 from django.shortcuts import render,redirect
 from .forms import Product_form,Category_form,Brand_form
-from .models import Product,Category,Brand
+from .models import Product,Category,Brand,Order
 from django.shortcuts import get_object_or_404
 from django.contrib import messages
 from django.contrib.auth import logout
@@ -181,6 +181,21 @@ def admin_unblock_user(request,id):
     block.save()
     return redirect('admin_dash')
 
+def admin_orders(request):
+    user=Order.objects.all()
+    return render(request,'admin_order_page.html',{'user':user})
+
+def admin_update_status(request,id,pro_id,status):
+    user=Customerdetails.objects.get(user__id=id)
+    order=Order.objects.get(product__id=pro_id,user=user)
+    order.status=status
+    order.save()
+    messages.success(request,'Status updated')
+    if request.user.is_staff:
+        return redirect('admin_order_page')
+    else:
+        return redirect('my_order')
+    i
 
 
 

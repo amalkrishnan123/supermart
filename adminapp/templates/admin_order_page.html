@@ -1,0 +1,97 @@
+{% extends "base_page.html" %}
+{% block content %}
+
+<style>
+    .status-badge {
+        font-size: 0.85rem;
+        padding: 6px 10px;
+        border-radius: 12px;
+        text-transform: capitalize;
+    }
+
+    .action-btn {
+        min-width: 95px;
+    }
+</style>
+
+<div class="container mt-4">
+
+    <h4 class="mb-3 fw-semibold">Order Management</h4>
+
+    <div class="table-responsive">
+        <table class="table table-bordered align-middle text-center">
+            <thead class="table-dark">
+                <tr>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th>Mobile</th>
+                    <th>Order ID</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for i in user %}
+                <tr>
+                    <td>{{ i.user.user.username }}</td>
+                    <td>{{ i.user.user.email }}</td>
+                    <td>{{ i.user.mobile }}</td>
+                    <td>
+                        <span class="fw-semibold">{{ i.order_id }}</span>
+                    </td>
+
+                    <!-- STATUS BADGE -->
+                    <td>
+                        <span class="badge status-badge
+                            {% if i.status == 'pending' %}bg-warning
+                            {% elif i.status == 'confirmed' %}bg-info
+                            {% elif i.status == 'shipped' %}bg-primary
+                            {% elif i.status == 'delivered' %}bg-success
+                            {% else %}bg-danger{% endif %}">
+                            {{ i.status }}
+                        </span>
+                    </td>
+
+                    <!-- ACTION -->
+                    <td>
+                        {% if i.status == 'pending' %}
+                            <a href="{% url 'admin_status_update' i.user.user.id i.product.id 'confirmed' %}"
+                               class="btn btn-outline-success btn-sm action-btn">
+                                Confirm
+                            </a>
+
+                        {% elif i.status == 'confirmed' %}
+                            <a href="{% url 'admin_status_update' i.user.user.id i.product.id 'shipped' %}"
+                               class="btn btn-outline-warning btn-sm action-btn">
+                                Ship
+                            </a>
+
+                        {% elif i.status == 'shipped' %}
+                            <a href="{% url 'admin_status_update' i.user.user.id i.product.id 'delivered' %}"
+                               class="btn btn-outline-primary btn-sm action-btn">
+                                Deliver
+                            </a>
+
+                        {% elif i.status == 'cancelled' %}
+                            <span class="badge bg-danger">Cancelled</span>
+
+                        {% elif i.status == 'delivered' %}
+                            <span class="badge bg-success">Delivered</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-muted py-4">
+                        No orders found.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+{% endblock content %}

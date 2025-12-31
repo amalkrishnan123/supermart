@@ -1,115 +1,233 @@
 {% extends "navbar.html" %}
-{% block username %}
-<div class="ms-auto text-end">
-    <h2 class="text-white mb-0">HELLO {{ request.user.username|upper }}</h2>
-</div>
-{% endblock username %}
-{% block content %}
-<div class="container mt-5 d-flex justify-content-center">
-    <div class="card p-4 shadow" style="width: 400px;">
+{% load static %}
 
-        <h4 class="text-center mb-3 text-primary">User Profile</h4>
-        <p class="text-center text-muted mb-4">
-            Your account & address details
-        </p>
+{# -------- SEARCH HIDDEN (LAYOUT PRESERVED) -------- #}
+{% block search %}
+<div class="navbar-search" style="visibility:hidden">
+    <input type="text" class="form-control form-control-sm">
+    <button class="btn btn-warning btn-sm">.</button>
+</div>
+{% endblock search %}
+
+{# -------- USERNAME -------- #}
+{% block username %}
+<span class="username-badge">
+    {{ request.user.username|upper }}
+</span>
+{% endblock username %}
+
+{% block content %}
+
+<style>
+/* ===== FIXED BACKGROUND ===== */
+body {
+    background:
+        linear-gradient(rgba(0,0,0,0.25), rgba(0,0,0,0.25)),
+        url("{% static 'images/bg1.jpg' %}");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;   /* 🔑 FIXED BACKGROUND */
+}
+
+/* ===== PAGE WRAPPER ===== */
+.profile-wrapper {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 15px;
+}
+
+/* ===== PROFILE CARD ===== */
+.profile-card {
+    width: 420px;
+    border-radius: 16px;
+    box-shadow: 0 12px 35px rgba(0,0,0,0.25);
+    border: none;
+}
+
+/* ===== HEADINGS ===== */
+.profile-title {
+    color: #ffc107;
+    font-weight: 700;
+}
+
+.profile-subtitle {
+    font-size: 0.9rem;
+    color: #ccc;
+}
+
+/* ===== LABELS ===== */
+.profile-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #adb5bd;
+}
+
+/* ===== READONLY FIELD ===== */
+.profile-field {
+    background: #f8f9fa;
+    color: #212529;
+    border-radius: 6px;
+    padding: 8px 10px;
+    font-size: 0.9rem;
+}
+
+/* ===== SECTION TITLE ===== */
+.section-title {
+    color: #ffc107;
+    font-size: 1rem;
+    font-weight: 600;
+    margin-top: 20px;
+}
+
+/* ===== BUTTONS ===== */
+.btn-profile {
+    font-weight: 600;
+}
+
+/* ===== MODAL FIX ===== */
+.modal-content {
+    border-radius: 12px;
+}
+</style>
+
+<div class="profile-wrapper">
+
+    <div class="card profile-card p-4 bg-dark text-light">
+
+        <!-- HEADER -->
+        <div class="text-center mb-3">
+            <h4 class="profile-title">User Profile</h4>
+            <p class="profile-subtitle">
+                Your account & address details
+            </p>
+        </div>
 
         <!-- USER DETAILS -->
         <div class="mb-3">
-            <label class="fw-bold text-primary">Username</label>
-            <div class="form-control bg-light">{{ profile.user.username }}</div>
+            <label class="profile-label">Username</label>
+            <div class="profile-field">{{ profile.user.username }}</div>
         </div>
 
         <div class="mb-3">
-            <label class="fw-bold text-primary">Email</label>
-            <div class="form-control bg-light">{{ profile.user.email }}</div>
+            <label class="profile-label">Email</label>
+            <div class="profile-field">{{ profile.user.email }}</div>
         </div>
 
         <div class="mb-3">
-            <label class="fw-bold text-primary">Mobile</label>
-            <div class="form-control bg-light">{{ profile.mobile }}</div>
+            <label class="profile-label">Mobile</label>
+            <div class="profile-field">{{ profile.mobile }}</div>
         </div>
 
-       <div class="mb-3">
-            <label class="fw-bold text-primary">Password</label>
-            <input type="text" class="form-control bg-light" value="{{ dots }}" readonly>
-
+        <div class="mb-3">
+            <label class="profile-label">Password</label>
+            <input type="text"
+                   class="form-control profile-field"
+                   value="{{ dots }}"
+                   readonly>
         </div>
 
-
-
-        <!-- ADDRESS DETAILS -->
         {% if profile.address %}
-        <hr>
+        <hr class="border-secondary">
 
-        <h5 class="text-primary text-center mb-3">Address Details</h5>
+        <h6 class="section-title text-center mb-3">
+            Address Details
+        </h6>
 
-        <div class="mb-3">
-            <label class="fw-bold text-primary">Address</label>
-            <div class="form-control bg-light">{{ profile.address.address }}</div>
+        <div class="mb-2">
+            <label class="profile-label">Address</label>
+            <div class="profile-field">
+                {{ profile.address.address }}
+            </div>
+        </div>
+
+        <div class="mb-2">
+            <label class="profile-label">Pincode</label>
+            <div class="profile-field">
+                {{ profile.address.pincode }}
+            </div>
+        </div>
+
+        <div class="mb-2">
+            <label class="profile-label">District</label>
+            <div class="profile-field">
+                {{ profile.address.district }}
+            </div>
         </div>
 
         <div class="mb-3">
-            <label class="fw-bold text-primary">Pincode</label>
-            <div class="form-control bg-light">{{ profile.address.pincode }}</div>
-        </div>
-
-        <div class="mb-3">
-            <label class="fw-bold text-primary">District</label>
-            <div class="form-control bg-light">{{ profile.address.district }}</div>
-        </div>
-
-        <div class="mb-3">
-            <label class="fw-bold text-primary">State</label>
-            <div class="form-control bg-light">{{ profile.address.state }}</div>
+            <label class="profile-label">State</label>
+            <div class="profile-field">
+                {{ profile.address.state }}
+            </div>
         </div>
 
         {% else %}
-        <p class="text-center text-muted">No address added.</p>
+        <p class="text-center text-muted mt-3">
+            No address added.
+        </p>
         {% endif %}
 
-        <a href="{% url 'edit_address' %}" class="btn btn-primary w-100 mt-3">
+        <!-- ACTION BUTTONS -->
+        <a href="{% url 'edit_address' %}"
+           class="btn btn-warning btn-profile w-100 mt-2">
             Edit Address
         </a>
-        <!-- Button trigger modal -->
-        <button type="button" class="btn btn-primary mt-2" data-bs-toggle="modal" data-bs-target="#exampleModal">
-        Add address
+
+        <button type="button"
+                class="btn btn-outline-warning btn-profile w-100 mt-2"
+                data-bs-toggle="modal"
+                data-bs-target="#exampleModal">
+            Add Address
         </button>
 
     </div>
 </div>
 
+<!-- ===== ADD ADDRESS MODAL ===== -->
+<div class="modal fade" id="exampleModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
 
+            <div class="modal-header">
+                <h5 class="modal-title">Add Address</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
 
-<!-- Modal -->
-<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h1 class="modal-title fs-5" id="exampleModalLabel">Modal title</h1>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <form action="{% url 'add_address' %}" method='post'>
-                {% csrf_token %}
-                <label for='address'/>Address</label>
-                <input type='text' name='address'/><br>
-                <label for='pincode'/>Pin Code</label>
-                <input type='number' name='pincode'/>
-                <br>
-                <label for='district'/>District</label>
-                <input type='text' name='district'/>
-                <br>
-                <label for='state'/>State</label>
-                <input type='text' name='state'/>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary">Save</button>
-                </div>
-        </form> 
-      </div>
+            <div class="modal-body">
+                <form action="{% url 'add_address' %}" method="post">
+                    {% csrf_token %}
+
+                    <label class="fw-semibold">Address</label>
+                    <input type="text" name="address" class="form-control mb-2">
+
+                    <label class="fw-semibold">Pin Code</label>
+                    <input type="number" name="pincode" class="form-control mb-2">
+
+                    <label class="fw-semibold">District</label>
+                    <input type="text" name="district" class="form-control mb-2">
+
+                    <label class="fw-semibold">State</label>
+                    <input type="text" name="state" class="form-control mb-3">
+
+                    <div class="text-end">
+                        <button type="button"
+                                class="btn btn-secondary"
+                                data-bs-dismiss="modal">
+                            Close
+                        </button>
+                        <button type="submit"
+                                class="btn btn-warning">
+                            Save
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+        </div>
     </div>
-  </div>
 </div>
+
 {% endblock content %}
-
-

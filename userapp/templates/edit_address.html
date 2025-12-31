@@ -1,78 +1,186 @@
 {% extends "navbar.html" %}
+{% load static %}
+
+{# -------- SEARCH HIDDEN -------- #}
+{% block search %}
+<div class="navbar-search" style="visibility:hidden">
+    <input type="text" class="form-control form-control-sm">
+    <button class="btn btn-warning btn-sm">.</button>
+</div>
+{% endblock search %}
+
+{# -------- USERNAME -------- #}
+{% block username %}
+<span class="username-badge">
+    {{ request.user.username|upper }}
+</span>
+{% endblock username %}
+
 {% block content %}
 
-<div class="container mt-5 d-flex justify-content-center">
-    <div class="card p-4 shadow" style="width: 450px;">
+<style>
+/* ===== FIXED BACKGROUND ===== */
+body {
+    background:
+        linear-gradient(rgba(0,0,0,0.25), rgba(0,0,0,0.25)),
+        url("{% static 'images/bg1.jpg' %}");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+}
 
-        <h4 class="text-center mb-3 text-primary">Edit User Details</h4>
-        <p class="text-center text-muted mb-4">
-            Update your account and address details
-        </p>
+/* ===== WRAPPER ===== */
+.edit-wrapper {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 15px;
+}
+
+/* ===== CARD ===== */
+.edit-card {
+    width: 460px;
+    border-radius: 16px;
+    box-shadow: 0 12px 35px rgba(0,0,0,0.25);
+    border: none;
+}
+
+/* ===== HEADINGS ===== */
+.edit-title {
+    color: #ffc107;
+    font-weight: 700;
+}
+
+.edit-subtitle {
+    font-size: 0.9rem;
+    color: #ccc;
+}
+
+/* ===== LABELS ===== */
+.edit-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #adb5bd;
+}
+
+/* ===== INPUTS ===== */
+.edit-input {
+    background: #f8f9fa;
+    color: #212529;
+    border-radius: 6px;
+    font-size: 0.9rem;
+}
+
+/* ===== SECTION TITLE ===== */
+.section-title {
+    color: #ffc107;
+    font-size: 1rem;
+    font-weight: 600;
+    margin-top: 20px;
+}
+</style>
+
+<div class="edit-wrapper">
+
+    <div class="card edit-card p-4 bg-dark text-light">
+
+        <!-- HEADER -->
+        <div class="text-center mb-3">
+            <h4 class="edit-title">Edit Profile</h4>
+            <p class="edit-subtitle">
+                Update your account and address details
+            </p>
+        </div>
 
         <form method="post">
             {% csrf_token %}
 
             <!-- USERNAME -->
             <div class="mb-3">
-                <label class="fw-bold text-primary">Username</label>
-                <input type="text" class="form-control bg-light" 
-                       name="username" value="{{ customer.user.username }}">
+                <label class="edit-label">Username</label>
+                <input type="text"
+                       name="username"
+                       class="form-control edit-input"
+                       value="{{ customer.user.username }}">
             </div>
 
-            <!-- NEW PASSWORD -->
+            <!-- PASSWORD -->
             <div class="mb-3">
-                <label class="fw-bold text-primary">New Password</label>
-                <input type="password" class="form-control bg-light" 
-                       name="password" placeholder="Enter new password (optional)">
+                <label class="edit-label">New Password</label>
+                <input type="password"
+                       name="password"
+                       class="form-control edit-input"
+                       placeholder="Enter new password (optional)">
             </div>
 
             <!-- EMAIL -->
             <div class="mb-3">
-                <label class="fw-bold text-primary">Email</label>
-                <input type="text" class="form-control bg-light" 
-                       name="email" value="{{ customer.user.email }}">
+                <label class="edit-label">Email</label>
+                <input type="email"
+                       name="email"
+                       class="form-control edit-input"
+                       value="{{ customer.user.email }}">
             </div>
 
             <!-- MOBILE -->
             <div class="mb-3">
-                <label class="fw-bold text-primary">Mobile</label>
-                <input type="text" class="form-control bg-light" 
-                       name="mobile" value="{{ customer.mobile }}">
+                <label class="edit-label">Mobile</label>
+                <input type="text"
+                       name="mobile"
+                       class="form-control edit-input"
+                       value="{{ customer.mobile }}">
             </div>
 
-            <hr>
-            <h5 class="text-primary text-center mb-3">Address Details</h5>
+            <hr class="border-secondary">
+
+            <h6 class="section-title text-center mb-3">
+                Address Details
+            </h6>
 
             <!-- ADDRESS -->
             <div class="mb-3">
-                <label class="fw-bold text-primary">Address</label>
-                <input type="text" class="form-control bg-light" 
-                       name="address" value="{{ address.address }}">
+                <label class="edit-label">Address</label>
+                <input type="text"
+                       name="address"
+                       class="form-control edit-input"
+                       value="{{ address.address }}">
             </div>
 
             <!-- PINCODE -->
             <div class="mb-3">
-                <label class="fw-bold text-primary">Pincode</label>
-                <input type="number" class="form-control bg-light" 
-                       name="pincode" value="{{ address.pincode }}">
+                <label class="edit-label">Pincode</label>
+                <input type="number"
+                       name="pincode"
+                       class="form-control edit-input"
+                       value="{{ address.pincode }}">
             </div>
 
             <!-- DISTRICT -->
             <div class="mb-3">
-                <label class="fw-bold text-primary">District</label>
-                <input type="text" class="form-control bg-light" 
-                       name="district" value="{{ address.district }}">
+                <label class="edit-label">District</label>
+                <input type="text"
+                       name="district"
+                       class="form-control edit-input"
+                       value="{{ address.district }}">
             </div>
 
             <!-- STATE -->
-            <div class="mb-3">
-                <label class="fw-bold text-primary">State</label>
-                <input type="text" class="form-control bg-light" 
-                       name="state" value="{{ address.state }}">
+            <div class="mb-4">
+                <label class="edit-label">State</label>
+                <input type="text"
+                       name="state"
+                       class="form-control edit-input"
+                       value="{{ address.state }}">
             </div>
 
-            <!-- SUBMIT BUTTON -->
-            <button type="submit" class="btn btn-primary w-100 mt-3">Save Changes</button>
+            <!-- SUBMIT -->
+            <button type="submit"
+                    class="btn btn-warning w-100 fw-semibold">
+                Save Changes
+            </button>
+
         </form>
 
     </div>

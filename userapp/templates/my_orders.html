@@ -1,66 +1,162 @@
 {% extends "navbar.html" %}
-{% block search %}
-<style>
-.fixed-img {
-    height: 200px;      
-    object-fit: contain; 
-}
-.card-link-wrapper {
-    text-decoration: none; 
-    color: inherit;
-}
-.card-link-wrapper:hover {
-    text-decoration: none;
-}
-body {
-    padding-top: 80px; 
-}
-</style>
+{% load static %}
 
-<form method="get" class="d-flex">
-    <input type="text" name="search" class="form-control mt-4 me-2 mb-1"
-           placeholder="Search here..." value="{{ search }}">
-    <button class="btn btn-warning mt-4 mb-1" type="submit">
+{% block search %}
+<form method="get" class="d-flex align-items-center gap-2 navbar-search">
+    <input type="text"
+           name="search"
+           class="form-control form-control-sm"
+           placeholder="Search ordered products..."
+           value="{{ request.GET.search }}">
+    <button class="btn btn-warning btn-sm">
         <i class="bi bi-search"></i>
     </button>
 </form>
 
-<form method="get" class="text-end">
-    <button type="submit" class="btn btn-link text-white p-0 me-1" style="text-decoration: none;">
-        clear
+<form method="get" class="text-end mt-1">
+    <button type="submit" class="btn btn-link text-white p-0">
+        Clear
     </button>
 </form>
 {% endblock search %}
+
 {% block username %}
-<div class="ms-auto text-end">
-    <h2 class="text-white mb-0">HELLO {{ request.user.username|upper }}</h2>
-</div>
+<span class="username-badge">
+    {{ request.user.username|upper }}
+</span>
 {% endblock username %}
+
 {% block content %}
-<h2>My Orders</h2>
 
-{% for order in orders %}
-<div class="card mb-3">
-    <div class="card-body">
-        <h5>{{ order.product.name }}</h5>
-        <p>Quantity: {{ order.quantity }}</p>
-        <p>Price: ₹{{ order.price }}</p>
-        <p>Total: ₹{{ order.total_amount }}</p>
+<!-- ✅ COMMON SIDEBAR LAYOUT -->
+<link rel="stylesheet" href="{% static 'css/sidebar.css' %}">
 
-        <span class="badge 
-            {% if order.status == 'pending' %}bg-warning
-            {% elif order.status == 'confirmed' %}bg-info
-            {% elif order.status == 'shipped' %}bg-primary
-            {% elif order.status == 'delivered' %}bg-success
-            {% else %}bg-danger{% endif %}">
-            {{ order.status|title }}
-        </span>
+<style>
+/* ===== BACKGROUND ===== */
+body {
+    min-height: 100vh;
+    background-image: url("{% static 'images/bg1.jpg' %}");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+}
 
-        <p class="text-muted mt-2">{{ order.created_at }}</p>
-    </div>
+/* ===== ORDER CARD ===== */
+.order-card {
+    max-width: 720px;
+    margin: 0 auto 14px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.95);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+    transition: all 0.2s ease;
+}
+
+.order-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 22px rgba(0,0,0,0.18);
+}
+</style>
+
+<!-- ================= SIDEBAR ================= -->
+<div class="filter-sidebar">
+    <form method="get">
+
+        <h5>Filter Orders</h5>
+
+        <label>Category</label>
+        <select name="category" class="form-select mb-2">
+            <option value="">All</option>
+            {% for i in cat %}
+            <option value="{{ i.id }}"
+                {% if request.GET.category == i.id|stringformat:"s" %}selected{% endif %}>
+                {{ i.name }}
+            </option>
+            {% endfor %}
+        </select>
+
+        <label>Brand</label>
+        <select name="brand" class="form-select mb-2">
+            <option value="">All</option>
+            {% for i in brand %}
+            <option value="{{ i.id }}"
+                {% if request.GET.brand == i.id|stringformat:"s" %}selected{% endif %}>
+                {{ i.name }}
+            </option>
+            {% endfor %}
+        </select>
+
+        <label>Status</label>
+        <select name="status" class="form-select mb-3">
+            <option value="">All</option>
+            <option value="pending" {% if request.GET.status == 'pending' %}selected{% endif %}>Pending</option>
+            <option value="confirmed" {% if request.GET.status == 'confirmed' %}selected{% endif %}>Confirmed</option>
+            <option value="shipped" {% if request.GET.status == 'shipped' %}selected{% endif %}>Shipped</option>
+            <option value="delivered" {% if request.GET.status == 'delivered' %}selected{% endif %}>Delivered</option>
+            <option value="cancelled" {% if request.GET.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+        </select>
+
+        <button class="btn btn-warning w-100 fw-semibold">
+            Apply Filters
+        </button>
+
+    </form>
 </div>
-{% empty %}
-<p>No orders yet.</p>
-{% endfor %}
+
+<!-- ================= PAGE CONTENT ================= -->
+<div class="page-content">
+
+    <div class="text-center mb-4">
+        <h2 class="text-warning fw-bold">My Orders</h2>
+    </div>
+
+    {% for order in orders %}
+    <div class="card order-card">
+        <div class="card-body py-3">
+
+            <div class="d-flex justify-content-between align-items-center">
+                <h6 class="fw-bold mb-0">{{ order.product.name }}</h6>
+                <span class="badge
+                    {% if order.status == 'pending' %}bg-warning
+                    {% elif order.status == 'confirmed' %}bg-info
+                    {% elif order.status == 'shipped' %}bg-primary
+                    {% elif order.status == 'delivered' %}bg-success
+                    {% else %}bg-danger{% endif %}">
+                    {{ order.status|title }}
+                </span>
+            </div>
+
+            <small class="text-muted">
+                Order ID: {{ order.order_id }}
+            </small>
+
+            <div class="d-flex gap-3 mt-2">
+                <span>Qty: <strong>{{ order.quantity }}</strong></span>
+                <span>₹{{ order.price }}</span>
+                <span class="fw-bold">Total: ₹{{ order.total_amount }}</span>
+            </div>
+
+            <div class="d-flex justify-content-between mt-2">
+                <small class="text-muted">
+                    {{ order.created_at|date:"d M Y, h:i A" }}
+                </small>
+
+                {% if order.status == 'pending' %}
+                <a href="{% url 'admin_status_update' order.user.user.id order.product.id 'cancelled' %}"
+                   class="btn btn-outline-danger btn-sm">
+                    Cancel
+                </a>
+                {% endif %}
+            </div>
+
+        </div>
+    </div>
+    {% empty %}
+    <p class="text-light text-center mt-5">
+        No orders found.
+    </p>
+    {% endfor %}
+
+</div>
 
 {% endblock %}

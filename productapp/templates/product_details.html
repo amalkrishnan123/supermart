@@ -3,7 +3,7 @@
 {% block search %}
 <style>
 .fixed-img {
-    height: 200px;
+    height: 250px;
     object-fit: contain;
 }
 </style>
@@ -17,16 +17,23 @@
 </form>
 
 <form method="get" class="text-end">
-    <button type="submit" class="btn btn-link text-white p-0 me-1" style="text-decoration: none;">
-        clear
+    <button type="submit"
+            class="btn btn-link text-white p-0 me-1"
+            style="text-decoration: none;">
+        Clear
     </button>
 </form>
 {% endblock search %}
 
+{# ================= USERNAME ================= #}
 {% block username %}
+{% if request.user.is_authenticated %}
 <div class="ms-auto text-end">
-    <h2 class="text-white mb-0">HELLO {{ request.user.username|upper }}</h2>
+    <h2 class="text-white mb-0">
+        HELLO {{ request.user.username|upper }}
+    </h2>
 </div>
+{% endif %}
 {% endblock username %}
 
 {% block content %}
@@ -38,7 +45,7 @@
 {% if messages %}
 <div class="container mb-3">
     {% for message in messages %}
-    <div class="alert alert-{{ message.tags }} fade show shadow-sm text-center"
+    <div class="alert alert-{{ message.tags }} shadow-sm text-center"
          style="border-radius:10px; font-size:15px;">
         <strong>{{ message }}</strong>
     </div>
@@ -55,89 +62,94 @@ setTimeout(() => {
 </script>
 {% endif %}
 
-<style>
-.card-link-wrapper {
-    text-decoration: none;
-    color: inherit;
-}
-.card-link-wrapper:hover {
-    text-decoration: none;
-}
-</style>
+{% if product %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
 
+        <div class="col-lg-5 col-md-6">
 
+            <div class="card shadow-sm" style="border-radius:15px;">
 
-<!-- ✅ CENTERED PRODUCT CARDS -->
-<div class="container">
-    <div class="row justify-content-center mt-3 g-4">
-
-        {% for i in product %}
-        <div class="col-lg-4 col-md-6 d-flex justify-content-center">
-
-            <a href="{% url 'product_desc' i.id %}" class="card-link-wrapper">
-            <div class="card shadow-sm mt-3" style="width: 22rem; border-radius: 15px;">
-
-                <img src="{{ i.image.url }}" class="card-img-top fixed-img" alt="...">
+                <!-- IMAGE -->
+                <img src="{{ product.image.url }}"
+                     class="card-img-top fixed-img"
+                     alt="{{ product.name }}">
 
                 <div class="card-body text-center">
 
                     <!-- Wishlist -->
-                    <a href="{% url 'toggle_wishlist' i.id %}" class="btn btn-light mb-2">
-                        {% if i.id in wishlist_ids %}
-                            <i class="bi bi-heart-fill fs-3 text-danger"></i>
+                    {% if request.user.is_authenticated %}
+                        <a href="{% url 'toggle_wishlist' product.id %}"
+                           class="btn btn-light mb-2">
+                            {% if product.id in wishlist_ids %}
+                                <i class="bi bi-heart-fill fs-3 text-danger"></i>
+                            {% else %}
+                                <i class="bi bi-heart fs-3"></i>
+                            {% endif %}
+                        </a>
+                    {% else %}
+                        <i class="bi bi-heart fs-3 text-muted mb-2"></i>
+                    {% endif %}
+
+                    <h4 class="fw-bold">{{ product.name|upper }}</h4>
+                    <h5 class="text-success">₹{{ product.price }}</h5>
+
+                    <p class="mb-1"><strong>Category:</strong> {{ product.category|upper }}</p>
+                    <p class="mb-1"><strong>Brand:</strong> {{ product.brand|upper }}</p>
+                    <p class="text-muted">{{ product.description }}</p>
+
+                    <!-- ACTION BUTTONS -->
+                    <div class="d-flex justify-content-center gap-2 flex-wrap mt-3">
+
+                        {% if request.user.is_authenticated %}
+
+                            {% if not item %}
+                                <a href="{% url 'add_to_cart' product.id %}"
+                                   class="btn btn-primary btn-sm">
+                                    <i class="bi bi-cart"></i> Add To Cart
+                                </a>
+                            {% else %}
+                                <button class="btn btn-secondary btn-sm" disabled>
+                                    In Cart
+                                </button>
+                            {% endif %}
+
+                            {% if product.stock > 0 %}
+                                <a href="{% url 'buy_now' product.id %}"
+                                   class="btn btn-danger btn-sm">
+                                    Buy Now
+                                </a>
+                            {% else %}
+                                <button class="btn btn-danger btn-sm" disabled>
+                                    Buy Now
+                                </button>
+                            {% endif %}
+
                         {% else %}
-                            <i class="bi bi-heart fs-3"></i>
+                            <a href="{% url 'login_view' %}?next={% url 'product_desc' product.id %}"
+                               class="btn btn-outline-primary btn-sm">
+                                Login to Purchase
+                            </a>
                         {% endif %}
-                    </a>
-
-                    <h5 class="card-title">{{ i.name|upper }}</h5>
-                    <h4 class="card-title">Rs:{{ i.price }}</h4>
-                <p class="card-text">{{ i.category|upper }}</p>
-                <h5 class="card-title">{{ i.description}}</h5>
-                <p class="card-text">{{ i.brand|upper}}</p>
-
-                    <div class="d-flex justify-content-center gap-2 flex-wrap">
-
-                        {% if not item %}
-        <a href="{% url 'add_to_cart' i.id %}"
-           class="btn btn-sm btn-primary flex-fill text-center">
-            <i class="bi bi-cart me-1"></i> Add To Cart
-        </a>
-    {% else %}
-        <button class="btn btn-sm btn-secondary flex-fill" disabled>
-            In Cart
-        </button>
-    {% endif %}
-
-    {% if i.stock > 0 %}
-        <a href="{% url 'buy_now' i.id %}"
-           class="btn btn-sm btn-danger flex-fill text-center">
-            Buy Now
-        </a>
-    {% else %}
-        <button class="btn btn-sm btn-danger flex-fill" disabled>
-            Buy Now
-        </button>
-    {% endif %}
-
-</div>
-
-{% if i.stock == 0 %}
-<p class="text-danger fw-bold mt-2 text-center">
-    Out of Stock
-</p>
-{% endif %}
-
-
                     </div>
+
+                    {% if product.stock == 0 %}
+                    <p class="text-danger fw-bold mt-3">
+                        Out of Stock
+                    </p>
+                    {% endif %}
+
                 </div>
             </div>
-            </a>
 
         </div>
-        {% endfor %}
-
     </div>
 </div>
+
+{% else %}
+<p class="text-center text-danger mt-5">
+    Product not found.
+</p>
+{% endif %}
 
 {% endblock content %}

@@ -71,8 +71,6 @@ def verify_otp(request,user_id):
 
 @never_cache
 def login_page(request):
-    # if request.user.is_authenticated:
-    #     return redirect('user_dashboard')
     if request.method=='POST':
         name=request.POST.get('username')
         password=request.POST.get('password')
@@ -88,28 +86,40 @@ def login_page(request):
     return render(request,'home_page.html')
 
 @never_cache
-@login_required
+@login_required(login_url='login_view')
 def user_dashboard(request):
-    cust=Customerdetails.objects.filter(user=request.user).first()
-    if cust is None:
-        cust = Customerdetails.objects.create(
-            user=request.user,
-            mobile="",
-            otp=None,
-            is_active=True
-        )
-    if cust.is_active==False:
+
+    cust, created = Customerdetails.objects.get_or_create(
+        user=request.user,
+        defaults={
+            'mobile': '',
+            'otp': None,
+            'is_active': True
+        }
+    )
+
+    if not cust.is_active:
         return redirect('login_view')
-    wishlist_ids = Wishlist.objects.filter(user=request.user).values_list('product_id', flat=True)
-    categorys=Category.objects.all()
-    brands=Brand.objects.all() 
+
+    wishlist_ids = list(
+        Wishlist.objects.filter(user=request.user)
+        .values_list('product_id', flat=True)
+    )
+
+    categories = Category.objects.all()
+    brands = Brand.objects.all()
+
     products = Product.objects.filter(is_available=True)
-    brand=request.GET.get('brand')
+
+    # -------- FILTERS (CHAINED) --------
+    brand = request.GET.get('brand')
     if brand:
-        products=Product.objects.filter(brand__id=brand)
-    category=request.GET.get('category')
+        products = products.filter(brand__id=brand)
+
+    category = request.GET.get('category')
     if category:
-        products=Product.objects.filter(category__id=category)
+        products = products.filter(category__id=category)
+
     price = request.GET.get('price')
     if price == '1':
         products = products.filter(price__gte=500, price__lte=1500)
@@ -119,21 +129,36 @@ def user_dashboard(request):
         products = products.filter(price__gte=2500, price__lte=3500)
     elif price == '4':
         products = products.filter(price__gt=3500)
-    search=request.GET.get('search')
+
+    search = request.GET.get('search')
     if search:
         products = products.filter(name__icontains=search)
+
     products = products.order_by('-created_at')
+
     paginator = Paginator(products, 6)
-    page_no = request.GET.get('page')
-    page = paginator.get_page(page_no)
-    return render(request,'user_dashboard.html',{'product':page,'wishlist_ids':list(wishlist_ids),'cat':categorys,'brand':brands})
+    page_number = request.GET.get('page')
+    page = paginator.get_page(page_number)
+
+    return render(
+        request,
+        'user_dashboard.html',
+        {
+            'product': page,
+            'wishlist_ids': wishlist_ids,
+            'cat': categories,
+            'brand': brands,
+        }
+    )
 
 @never_cache
 def logout_user(request):
     logout(request)
-    return redirect('login_view')
+    return redirect('user_dashboard')
 
 def user_address(request):
+    if not request.user.is_authenticated:
+        return redirect('login_view')
     if request.user.is_authenticated:
         if request.method=='POST':
             address=request.POST.get('address')
@@ -149,6 +174,8 @@ def user_address(request):
 @never_cache
 @login_required        
 def edit_user_details(request):
+    if not request.user.is_authenticated:
+        return redirect('login_view')
     customer=Customerdetails.objects.get(user=request.user)
     address=customer.address
     user=request.user
@@ -185,27 +212,43 @@ def edit_user_details(request):
 @login_required
 def my_orders(request):
     customer = get_object_or_404(Customerdetails, user=request.user)
-    orders = Order.objects.filter(user=customer).order_by('-created_at')
-    return render(request, 'my_orders.html', {'orders': orders})
-
+    orders = Order.objects.filter(user=customer).select_related('product', 'product__category', 'product__brand').order_by('-created_at')
+    # SEARCH (ordered product name)
+    search = request.GET.get('search')
+    if search:
+        orders = orders.filter(product__name__icontains=search)
+    # CATEGORY FILTER
+    category = request.GET.get('category')
+    if category:
+        orders = orders.filter(product__category__id=category)
+    # BRAND FILTER
+    brand = request.GET.get('brand')
+    if brand:
+        orders = orders.filter(product__brand__id=brand)
+    # STATUS FILTER
+    status = request.GET.get('status')
+    if status:
+        orders = orders.filter(status=status)
+    return render(request,'my_orders.html',
+        {
+            'orders': orders,
+            'cat': Category.objects.all(),
+            'brand': Brand.objects.all(),
+        })
+        
 @login_required
 def confirmation(request):
+    if not request.user.is_authenticated:
+        return redirect('login_view')
     cart_items = CartProduct.objects.filter(cart__user=request.user)
-    # if not cart_items.exists():
-    #     messages.error(request, "Your cart is empty. Add at least one product to continue.")
-    #     return redirect('view_cart')
     details=get_object_or_404(Customerdetails,user=request.user)
-    # if not details.address:
-    #     messages.error(
-    #         request,
-    #         "Please add your address before proceeding with the order."
-    #     )
-    #     return redirect('profile') 
     return render(request,'order_confirmation.html',{'details':details})
 
 #this is for product purchase from cart side
 @login_required
 def place_order(request):
+    if not request.user.is_authenticated:
+        return redirect('login_view')
     if request.method == "POST":
         customer = get_object_or_404(Customerdetails, user=request.user)
         cart_items = CartProduct.objects.filter(cart__user=request.user)
@@ -219,8 +262,7 @@ def place_order(request):
                 quantity=item.quantity,
                 price=item.product.price,
                 total_amount=item.product.price * item.quantity,
-                status='pending'
-            )
+                status='pending')
             item.product.stock-=item.quantity
             item.product.save()
         # clear cart after placing order
@@ -228,7 +270,51 @@ def place_order(request):
         messages.success(request, "Order placed successfully!")
         return redirect('my_order')
     
-
+def user_main_page(request):
+    categories = Category.objects.all()
+    brands = Brand.objects.all()
+    products = Product.objects.filter(is_available=True)
+    # ---------- FILTERS ----------
+    brand = request.GET.get('brand')
+    if brand:
+        products = products.filter(brand__id=brand)
+    category = request.GET.get('category')
+    if category:
+        products = products.filter(category__id=category)
+    price = request.GET.get('price')
+    if price == '1':
+        products = products.filter(price__gte=500, price__lte=1500)
+    elif price == '2':
+        products = products.filter(price__gte=1500, price__lte=2500)
+    elif price == '3':
+        products = products.filter(price__gte=2500, price__lte=3500)
+    elif price == '4':
+        products = products.filter(price__gt=3500)
+    search = request.GET.get('search')
+    if search:
+        products = products.filter(name__icontains=search)
+    # ---------- ORDER ----------
+    products = products.order_by('-created_at')
+    # ---------- PAGINATION ----------
+    paginator = Paginator(products, 6)
+    page_number = request.GET.get('page')
+    page = paginator.get_page(page_number)
+    # ---------- WISHLIST ----------
+    wishlist_ids = []
+    if request.user.is_authenticated:
+        wishlist_ids = list(
+            Wishlist.objects.filter(user=request.user)
+            .values_list('product_id', flat=True))
+    return render(request,
+        'user_main_home.html',
+        {
+            'product': page,
+            'cat': categories,
+            'brand': brands,
+            'wishlist_ids': wishlist_ids,
+        }
+    )
+    
 
 
 

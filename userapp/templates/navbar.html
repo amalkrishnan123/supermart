@@ -1,78 +1,251 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <!--nevercache-->
+    <!-- Never cache -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <title>{% block title %}{% endblock %}</title>
+
+    <style>
+    :root {
+        --nav-height: 72px;
+        --accent: #ffc107;
+        --dark: #020617;
+    }
+
+    body {
+        background-color: #f4f6f9;
+        padding-top: var(--nav-height);
+    }
+
+    /* NAVBAR */
+    .navbar {
+        height: var(--nav-height);
+        background: linear-gradient(90deg, #0f172a, #020617);
+        box-shadow: 0 8px 24px rgba(0,0,0,.35);
+    }
+
+    .navbar-collapse {
+        align-items: center;
+    }
+
+    .navbar-brand {
+        font-weight: 700;
+        font-size: 1.25rem;
+    }
+
+    /* NAV LINKS */
+    .navbar-nav .nav-link {
+        color: #e5e7eb !important;
+        font-weight: 500;
+        padding: 6px 14px;
+        border-radius: 8px;
+        transition: all .25s ease;
+    }
+
+    .navbar-nav .nav-link:hover {
+        background: rgba(255,193,7,.15);
+        color: var(--accent) !important;
+    }
+
+    /* RIGHT SIDE WRAPPER */
+    .navbar-right {
+        display: flex;
+        align-items: flex-start; /* CRITICAL */
+        gap: 14px;
+    }
+
+    /* SEARCH */
+    .search-wrap {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .search-form {
+        display: flex;
+        height: 38px;
+        border-radius: 999px;
+        overflow: hidden;
+        background: var(--dark);
+        border: 1px solid rgba(255,255,255,.15);
+    }
+
+    .search-input {
+        width: 210px;
+        height: 38px;
+        background: transparent;
+        border: none;
+        color: #fff;
+        padding: 0 14px;
+        font-size: .85rem;
+    }
+
+    .search-input::placeholder {
+        color: #9ca3af;
+    }
+
+    .search-input:focus {
+        outline: none;
+    }
+
+    .search-btn {
+        width: 44px;
+        height: 38px;
+        background: var(--accent);
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .clear-btn {
+        font-size: .75rem;
+        color: #9ca3af;
+        text-decoration: none;
+        padding: 0;
+        margin-top: 2px;
+    }
+
+    .clear-btn:hover {
+        color: var(--accent);
+    }
+
+    /* USERNAME */
+    .user-wrap {
+        height: 38px;
+        display: flex;
+        align-items: center;
+    }
+
+    .username-badge {
+        height: 38px;
+        display: flex;
+        align-items: center;
+        padding: 0 16px;
+        background: linear-gradient(135deg, #facc15, #f59e0b);
+        color: #020617;
+        border-radius: 999px;
+        font-weight: 700;
+        font-size: .8rem;
+        letter-spacing: .5px;
+        box-shadow: 0 4px 14px rgba(0,0,0,.35);
+    }
+    </style>
+
 </head>
 
 <body>
-{% block navtag %}
-<nav class="navbar navbar-expand-lg  bg-dark fixed-top mb-2">
+
+<nav class="navbar navbar-expand-lg bg-dark fixed-top">
     <div class="container">
 
-        <!-- Left: Profile -->
+        <!-- Brand -->
         <a class="navbar-brand text-warning" href="{% url 'profile' %}">
-            Profile
+            <i class="bi bi-person-circle me-1"></i> Profile
         </a>
 
-        <!-- Mobile toggle button -->
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar">
+        <!-- Toggle -->
+        <button class="navbar-toggler bg-warning" type="button"
+                data-bs-toggle="collapse" data-bs-target="#mainNavbar">
             <span class="navbar-toggler-icon"></span>
         </button>
 
-        <!-- Menu Items -->
         <div class="collapse navbar-collapse" id="mainNavbar">
 
-            <!-- Left Navigation -->
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            <!-- Left Menu -->
+            <ul class="navbar-nav me-auto gap-lg-2">
                 <li class="nav-item">
+                    {% if request.user.is_authenticated %}
                     <a class="nav-link text-warning" href="{% url 'user_dashboard' %}">Home</a>
+                    {% else %}
+                    <a class="nav-link text-warning" href="{% url 'main_home' %}">Home</a>
+                    {% endif %}
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-warning" href="{% url "view_wishlist" %}">Wishlist</a>
+                    <a class="nav-link text-warning" href="{% url 'view_wishlist' %}">Wishlist</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-warning" href="{% url "my_order" %}">My Orders</a>
+                    <a class="nav-link text-warning" href="{% url 'my_order' %}">My Orders</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-warning" href="{% url "view_cart" %}">Cart</a>
+                    <a class="nav-link text-warning" href="{% url 'view_cart' %}">Cart</a>
                 </li>
+                
                 <li class="nav-item">
-                    <a class="nav-link text-warning" href="{% url 'logout_view' %}">Logout</a>
+                    {% if request.user.is_authenticated %}
+                    <a class="nav-link text-danger fw-semibold" href="{% url 'logout_view' %}">
+                        Logout
+                    </a>
+                    {% else %}
+                    <a class="nav-link text-danger fw-semibold" href="{% url 'login_view' %}">
+                        Login
+                    </a>
+                    {% endif %}
                 </li>
+                
+                
+                
+
             </ul>
 
-            <!-- Search Block -->
-            <div class="me-3">
-                {% block search %}{% endblock %}
-            </div>
+            <!-- Search -->
+           <!-- RIGHT SIDE NAVBAR -->
+<div class="navbar-right d-flex align-items-start gap-3">
 
-            <!-- Username (Right Side) -->
-            <div class="text-end">
-                {% block username %}{% endblock %}
-            </div>
+    <!-- SEARCH BLOCK -->
+    <div class="search-container">
+
+        <!-- Search row -->
+        <form method="get" class="search-form">
+            <input type="text"
+                   name="search"
+                   class="search-input"
+                   placeholder="Search products"
+                   value="{{ request.GET.search }}">
+            <button type="submit" class="search-btn">
+                <i class="bi bi-search"></i>
+            </button>
+        </form>
+
+        <!-- Clear row -->
+        <form method="get" class="clear-form">
+            <button type="submit" class="btn btn-link clear-btn">
+                Clear filters
+            </button>
+        </form>
+
+    </div>
+
+    <!-- USERNAME -->
+    {% if request.user.is_authenticated %}
+    <div class="user-container">
+        <span class="username-badge">
+            {{ request.user.username|upper }}
+        </span>
+    </div>
+    {% endif %}
+
+</div>
+
 
         </div>
     </div>
 </nav>
-{% endblock navtag %}
-<!-- Main Page Content -->
-<div class="container pt-4" style="margin-top: 50px;">
-    {% block content %}
-    {% endblock %}
+
+<div class="container">
+    {% block content %}{% endblock %}
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
-
 </body>
 </html>
