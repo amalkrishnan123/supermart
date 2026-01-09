@@ -27,15 +27,11 @@
         padding-top: var(--nav-height);
     }
 
-    /* NAVBAR */
+    /* ================= NAVBAR ================= */
     .navbar {
         height: var(--nav-height);
         background: linear-gradient(90deg, #0f172a, #020617);
         box-shadow: 0 8px 24px rgba(0,0,0,.35);
-    }
-
-    .navbar-collapse {
-        align-items: center;
     }
 
     .navbar-brand {
@@ -45,7 +41,7 @@
 
     /* NAV LINKS */
     .navbar-nav .nav-link {
-        color: #e5e7eb !important;
+        color: var(--accent) !important;
         font-weight: 500;
         padding: 6px 14px;
         border-radius: 8px;
@@ -54,21 +50,39 @@
 
     .navbar-nav .nav-link:hover {
         background: rgba(255,193,7,.15);
-        color: var(--accent) !important;
     }
 
-    /* RIGHT SIDE WRAPPER */
+    /* ================= MOBILE FIX ================= */
+    @media (max-width: 991px) {
+
+        /* FULL BLACK BACKGROUND WHEN MENU OPENS */
+        .navbar-collapse {
+            background: #020617;
+            padding: 16px;
+            margin-top: 10px;
+            border-radius: 14px;
+        }
+
+        .navbar-nav {
+            gap: 6px;
+        }
+
+        .navbar-nav .nav-link {
+            color: #ffc107 !important;
+            text-align: left;
+        }
+    }
+
+    /* ================= SEARCH ================= */
     .navbar-right {
         display: flex;
-        align-items: flex-start; /* CRITICAL */
+        align-items: flex-start;
         gap: 14px;
     }
 
-    /* SEARCH */
     .search-wrap {
         display: flex;
         flex-direction: column;
-        align-items: flex-start;
     }
 
     .search-form {
@@ -82,7 +96,6 @@
 
     .search-input {
         width: 210px;
-        height: 38px;
         background: transparent;
         border: none;
         color: #fff;
@@ -100,7 +113,6 @@
 
     .search-btn {
         width: 44px;
-        height: 38px;
         background: var(--accent);
         border: none;
         display: flex;
@@ -111,7 +123,6 @@
     .clear-btn {
         font-size: .75rem;
         color: #9ca3af;
-        text-decoration: none;
         padding: 0;
         margin-top: 2px;
     }
@@ -120,13 +131,7 @@
         color: var(--accent);
     }
 
-    /* USERNAME */
-    .user-wrap {
-        height: 38px;
-        display: flex;
-        align-items: center;
-    }
-
+    /* ================= USER ================= */
     .username-badge {
         height: 38px;
         display: flex;
@@ -137,16 +142,14 @@
         border-radius: 999px;
         font-weight: 700;
         font-size: .8rem;
-        letter-spacing: .5px;
         box-shadow: 0 4px 14px rgba(0,0,0,.35);
     }
     </style>
-
 </head>
 
 <body>
 
-<nav class="navbar navbar-expand-lg bg-dark fixed-top">
+<nav class="navbar navbar-expand-lg fixed-top">
     <div class="container">
 
         <!-- Brand -->
@@ -163,85 +166,86 @@
         <div class="collapse navbar-collapse" id="mainNavbar">
 
             <!-- Left Menu -->
-            <ul class="navbar-nav me-auto gap-lg-2">
+            <ul class="navbar-nav me-auto">
+                {% if user.is_authenticated %}
                 <li class="nav-item">
-                    {% if request.user.is_authenticated %}
-                    <a class="nav-link text-warning" href="{% url 'user_dashboard' %}">Home</a>
-                    {% else %}
-                    <a class="nav-link text-warning" href="{% url 'main_home' %}">Home</a>
-                    {% endif %}
+                    <a class="nav-link" href="{% url 'user_dashboard' %}">Home</a>
+                </li>
+                {% else %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'main_home' %}">Home</a>
+                </li>
+                {% endif %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'view_wishlist' %}">Wishlist</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-warning" href="{% url 'view_wishlist' %}">Wishlist</a>
+                    <a class="nav-link" href="{% url 'my_order' %}">My Orders</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-warning" href="{% url 'my_order' %}">My Orders</a>
+                    <a class="nav-link" href="{% url 'view_cart' %}">Cart</a>
                 </li>
+                {% if user.is_authenticated %}
                 <li class="nav-item">
-                    <a class="nav-link text-warning" href="{% url 'view_cart' %}">Cart</a>
+                    <a class="nav-link text-danger" href="{% url 'logout_view' %}">Logout</a>
                 </li>
-                
+                {% else %}
                 <li class="nav-item">
-                    {% if request.user.is_authenticated %}
-                    <a class="nav-link text-danger fw-semibold" href="{% url 'logout_view' %}">
-                        Logout
-                    </a>
-                    {% else %}
-                    <a class="nav-link text-danger fw-semibold" href="{% url 'login_view' %}">
-                        Login
-                    </a>
-                    {% endif %}
+                    <a class="nav-link text-danger" href="{% url 'logout_view' %}">Login</a>
                 </li>
-                
-                
-                
+                {% endif %}
 
             </ul>
 
-            <!-- Search -->
-           <!-- RIGHT SIDE NAVBAR -->
-<div class="navbar-right d-flex align-items-start gap-3">
+            <!-- RIGHT SIDE -->
+            <div class="navbar-right">
 
-    <!-- SEARCH BLOCK -->
-    <div class="search-container">
+                <div class="search-wrap">
+                    <form method="get" class="search-form">
+                        <input type="text"
+                               name="search"
+                               class="search-input"
+                               placeholder="Search products"
+                               value="{{ request.GET.search }}">
+                        <button type="submit" class="search-btn">
+                            <i class="bi bi-search"></i>
+                        </button>
+                    </form>
+                    <form method="get">
+                        <button class="btn btn-link clear-btn">Clear filters</button>
+                    </form>
+                </div>
 
-        <!-- Search row -->
-        <form method="get" class="search-form">
-            <input type="text"
-                   name="search"
-                   class="search-input"
-                   placeholder="Search products"
-                   value="{{ request.GET.search }}">
-            <button type="submit" class="search-btn">
-                <i class="bi bi-search"></i>
-            </button>
-        </form>
+                {% if request.user.is_authenticated %}
+                <span class="username-badge">
+                    {{ request.user.username|upper }}
+                </span>
+                {% endif %}
 
-        <!-- Clear row -->
-        <form method="get" class="clear-form">
-            <button type="submit" class="btn btn-link clear-btn">
-                Clear filters
-            </button>
-        </form>
-
-    </div>
-
-    <!-- USERNAME -->
-    {% if request.user.is_authenticated %}
-    <div class="user-container">
-        <span class="username-badge">
-            {{ request.user.username|upper }}
-        </span>
-    </div>
-    {% endif %}
-
-</div>
-
+            </div>
 
         </div>
     </div>
 </nav>
+{% if messages %}
+<div class="container mb-3">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} shadow-sm text-center"
+         style="border-radius:10px; font-size:15px;">
+        <strong>{{ message }}</strong>
+    </div>
+    {% endfor %}
+</div>
 
+<script>
+setTimeout(() => {
+    document.querySelectorAll('.alert').forEach(alert => {
+        alert.style.opacity = "0";
+        setTimeout(() => alert.remove(), 600);
+    });
+}, 2000);
+</script>
+{% endif %}
 <div class="container">
     {% block content %}{% endblock %}
 </div>

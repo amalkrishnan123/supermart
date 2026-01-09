@@ -15,7 +15,7 @@ from django.contrib.auth import update_session_auth_hash
 from django.core.paginator import Paginator
 from django.views.decorators.cache import never_cache
 from django.db.models import Q
-
+from adminapp.tasks import main_fun
 
 # Create your views here.
 def otp_generation():
@@ -39,16 +39,9 @@ def user_register(request):
             user=form.save()
             otp=otp_generation()
             cust=Customerdetails.objects.create(user=user,mobile=form.cleaned_data['mobile'],otp=otp,password_length=len(raw_password))
-            subject='verification for supermarket'
-            message=f'welcome to online supermarket..please verify the otp is {otp}'
             email=form.cleaned_data['email']
-            send_mail(
-                subject,
-                message,
-                settings.EMAIL_HOST_USER,
-                [email],
-                fail_silently=False
-            )
+            print('hii',email,otp)
+            main_fun.delay(email,otp)
             return redirect('otp_verification',user_id=cust.user.id)   
     else:
         form=UserForm()
@@ -296,7 +289,7 @@ def user_main_page(request):
     # ---------- ORDER ----------
     products = products.order_by('-created_at')
     # ---------- PAGINATION ----------
-    paginator = Paginator(products, 6)
+    paginator = Paginator(products, 5)
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
     # ---------- WISHLIST ----------

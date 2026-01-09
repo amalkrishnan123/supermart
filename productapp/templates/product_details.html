@@ -41,26 +41,7 @@
 <!-- Spacer -->
 <div style="height: 90px;"></div>
 
-<!-- MESSAGE BLOCK -->
-{% if messages %}
-<div class="container mb-3">
-    {% for message in messages %}
-    <div class="alert alert-{{ message.tags }} shadow-sm text-center"
-         style="border-radius:10px; font-size:15px;">
-        <strong>{{ message }}</strong>
-    </div>
-    {% endfor %}
-</div>
 
-<script>
-setTimeout(() => {
-    document.querySelectorAll('.alert').forEach(alert => {
-        alert.style.opacity = "0";
-        setTimeout(() => alert.remove(), 600);
-    });
-}, 2000);
-</script>
-{% endif %}
 
 {% if product %}
 <div class="container mt-4">

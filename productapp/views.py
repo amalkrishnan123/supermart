@@ -192,7 +192,6 @@ def buy_now(request, id):
         cart=cart,
         product=product
     )
-    item.total = item.product.price * item.quantity
     total_amount = item.total
     return render(request, 'buy_now.html', {
         'item': item,
