@@ -21,7 +21,8 @@ urlpatterns = [
     path('orders/',views.my_orders,name='my_order'),
     path('order_confirm',views.confirmation,name='order_confirm'),
     path('place-order/', views.place_order, name='place_order'),
-    path('',views.user_main_page,name='main_home')
+    path('',views.user_main_page,name='main_home'),
+    path('review-rating/<int:id>',views.review_fun,name='review_page')
     
 
 

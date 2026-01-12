@@ -147,8 +147,10 @@ body {
                     Cancel
                 </a>
                 {% endif %}
+                {% if order.status == 'delivered' %}
+                <a href="{% url "review_page" order.product.id %}" class="btn btn-outline-primary btn-sm">Review</a>
+                {% endif %}
             </div>
-
         </div>
     </div>
     {% empty %}
@@ -156,7 +158,5 @@ body {
         No orders found.
     </p>
     {% endfor %}
-
 </div>
-
 {% endblock %}

@@ -9,13 +9,24 @@ from django.contrib import messages
 from django.core.paginator import Paginator
 from django.contrib.auth.decorators import login_required
 
+
+def admin_only(fun):
+    @login_required
+    def wrapper(request,*args,**kwargs):
+        if not request.user.is_staff:
+            return redirect('login_view')
+        return fun(request,*args,**kwargs)
+    return wrapper
+
 # Create your views here.
+@admin_only
 @login_required
 def admin_dashboard(request):
     form=Customerdetails.objects.all()
     return render(request,'admin_dashboard.html',{'form':form})
 
 @login_required
+@admin_only
 def admin_product_page(request):
     product_list=Product.objects.all().order_by('-id')
     paginator=Paginator(product_list,6)
@@ -24,6 +35,7 @@ def admin_product_page(request):
     return render(request,'product_page.html',{'product_list':page})
 
 @login_required
+@admin_only
 def admin_add_product(request):
     if request.method=='POST':
         product=Product_form(request.POST,request.FILES)
@@ -35,6 +47,7 @@ def admin_add_product(request):
     return render(request,'admin_add_product.html',{'form':product})
 
 @login_required
+@admin_only
 def admin_edit_product(request,id):
     edit=Product.objects.get(id=id)
     if request.method=='POST':
@@ -47,12 +60,14 @@ def admin_edit_product(request,id):
     return render(request,'admin_edit_product.html',{'form':edit_product})
 
 @login_required
+@admin_only
 def admin_delete_product(request,id):
     user=get_object_or_404(Product,id=id)
     user.delete()
     return redirect('all_products')
 
 @login_required
+@admin_only
 def block_product(request,id):
     product=get_object_or_404(Product,id=id)
     product.is_available=False
@@ -61,6 +76,7 @@ def block_product(request,id):
     return redirect('all_products')
 
 @login_required
+@admin_only
 def unblock_product(request,id):
     product=get_object_or_404(Product,id=id)
     product.is_available=True
@@ -69,11 +85,13 @@ def unblock_product(request,id):
     return redirect('all_products')
 
 @login_required
+@admin_only
 def admin_category_page(request):
     product_categories=Category.objects.all()
     return render(request,'category_page.html',{'category':product_categories})
 
 @login_required
+@admin_only
 def admin_add_category(request):
     if request.method=='POST':
         category=Category_form(request.POST)
@@ -85,6 +103,7 @@ def admin_add_category(request):
     return render(request,'admin_add_category.html',{'form':category})
 
 @login_required
+@admin_only
 def admin_edit_category(request,id):
     category=get_object_or_404(Category,id=id)
     if request.method=='POST':
@@ -96,11 +115,14 @@ def admin_edit_category(request,id):
     return render(request,'category_page.html')
 
 @login_required
+@admin_only
 def admin_delete_category(request,id):
     user=get_object_or_404(Category,id=id)
     user.delete()
     return redirect('all_category')
 
+@login_required
+@admin_only
 def block_category(request,id):
     category=get_object_or_404(Category,id=id)
     category.is_available=False
@@ -108,6 +130,8 @@ def block_category(request,id):
     messages.success(request,'category has been blocked')
     return redirect('all_category')
 
+@login_required
+@admin_only
 def unblock_category(request,id):
     category=get_object_or_404(Category,id=id)
     category.is_available=True
@@ -116,11 +140,13 @@ def unblock_category(request,id):
     return redirect('all_category')
 
 @login_required
+@admin_only
 def admin_brand_page(request):
     product_brand=Brand.objects.all()
     return render(request,'brand_page.html',{'brand':product_brand})
 
 @login_required
+@admin_only
 def admin_add_brand(request):
     if request.method=='POST':
         brand=Brand_form(request.POST)
@@ -132,6 +158,7 @@ def admin_add_brand(request):
     return render(request,'admin_add_brand.html',{'form':brand})
 
 @login_required
+@admin_only
 def admin_edit_brand(request,id):
     brand=get_object_or_404(Brand,id=id)
     if request.method=='POST':
@@ -143,11 +170,14 @@ def admin_edit_brand(request,id):
     return render(request,'brand_page.html')
 
 @login_required
+@admin_only
 def admin_delete_brand(request,id):
     user=get_object_or_404(Brand,id=id)
     user.delete()
     return redirect('all_brand')
 
+@login_required
+@admin_only
 def block_brand(request,id):
     brand=get_object_or_404(Brand,id=id)
     brand.is_available=False
@@ -155,6 +185,8 @@ def block_brand(request,id):
     messages.success(request,'brand has been blocked')
     return redirect('all_brand')
 
+@login_required
+@admin_only
 def unblock_brand(request,id):
     brand=get_object_or_404(Brand,id=id)
     brand.is_available=True
@@ -163,11 +195,13 @@ def unblock_brand(request,id):
     return redirect('all_brand')
 
 @login_required
+@admin_only
 def admin_logout(request):
     logout(request)
     return redirect('login_view')
 
 @login_required
+@admin_only
 def admin_block_user(request,id):
     block=get_object_or_404(Customerdetails,id=id)
     block.is_active=False
@@ -175,16 +209,21 @@ def admin_block_user(request,id):
     return redirect('admin_dash')
     
 @login_required
+@admin_only
 def admin_unblock_user(request,id):
     block=get_object_or_404(Customerdetails,id=id)
     block.is_active=True
     block.save()
     return redirect('admin_dash')
 
+@login_required
+@admin_only
 def admin_orders(request):
     user=Order.objects.all()
     return render(request,'admin_order_page.html',{'user':user})
 
+@login_required
+@admin_only
 def admin_update_status(request,id,pro_id,status):
     user=Customerdetails.objects.get(user__id=id)
     order=Order.objects.get(product__id=pro_id,user=user)

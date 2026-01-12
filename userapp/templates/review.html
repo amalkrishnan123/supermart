@@ -1,0 +1,75 @@
+{% extends "navbar.html" %}
+{% load static %}
+
+{% block content %}
+
+<style>
+.rating {
+    direction: rtl;
+    display: inline-flex;
+    font-size: 30px;
+}
+
+.rating input {
+    display: none;
+}
+
+.rating label {
+    color: #ccc;
+    cursor: pointer;
+}
+
+.rating input:checked ~ label,
+.rating label:hover,
+.rating label:hover ~ label {
+    color: gold;
+}
+</style>
+
+<div class="container mt-4">
+
+    <!-- PRODUCT IMAGE -->
+    <img src="{{ product.image.url }}" class="img-fluid mb-3" style="max-width:250px;">
+
+    <h4>{{ product.name }}</h4>
+
+    <!-- REVIEW FORM -->
+    <form method="post">
+        {% csrf_token %}
+
+        <!--  STAR RATING -->
+        <div class="rating mb-3">
+            {% for i in "54321" %}
+            <input type="radio"
+                   name="rating"
+                   id="star{{ i }}"
+                   value="{{ i }}"
+                   {% if existing_review and existing_review.rating == i|add:"0" %}
+                   checked
+                   {% endif %}>
+            <label for="star{{ i }}">★</label>
+            {% endfor %}
+        </div>
+
+        <!-- REVIEW TEXT -->
+        <div class="mb-3">
+            <label for="review">Review</label>
+            <textarea id="review"
+                      name="review"
+                      class="form-control"
+                      rows="4">{% if existing_review %}{{ existing_review.review }}{% endif %}</textarea>
+        </div>
+
+        <!-- BUTTON -->
+        <button type="submit" class="btn btn-primary">
+            {% if existing_review %}
+                Update Review
+            {% else %}
+                Submit Review
+            {% endif %}
+        </button>
+    </form>
+
+</div>
+
+{% endblock %}

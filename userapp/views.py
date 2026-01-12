@@ -2,7 +2,7 @@ from django.shortcuts import render,redirect
 from django.contrib.auth import authenticate,login,logout
 from django.contrib import messages
 from . forms import UserForm
-from .models import Customerdetails,CustomerAddress
+from .models import Customerdetails,CustomerAddress,ReviewModel
 from productapp.models import Wishlist,CartProduct
 import random
 from django.core.mail import send_mail
@@ -292,7 +292,7 @@ def user_main_page(request):
     paginator = Paginator(products, 5)
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
-    # ---------- WISHLIST ----------
+    # ------- WISHLIST ----------
     wishlist_ids = []
     if request.user.is_authenticated:
         wishlist_ids = list(
@@ -308,6 +308,26 @@ def user_main_page(request):
         }
     )
     
+def review_fun(request,id):
+    user=get_object_or_404(Customerdetails,user=request.user)
+    product=get_object_or_404(Product,id=id)
+    existing_review = ReviewModel.objects.get(
+        product=product,
+        customer=user
+    )
+    if request.method=='POST':
+        rating=request.POST.get('rating')
+        review=request.POST.get('review')
+        ReviewModel.objects.update_or_create(
+            product=product,
+            customer=user,
+            defaults={
+                'rating': rating if rating else None,
+                'review': review if review else ''
+            }
+        )
+        return redirect('my_order')
+    return render(request,'review.html',{'product':product,'existing_review':existing_review})
 
 
 
