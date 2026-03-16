@@ -1,5 +1,6 @@
 {% extends "navbar.html" %}
 {% block content %}
+{% csrf_token %}
 
 <div class="container mt-5 d-flex justify-content-center">
     <div class="card p-4 shadow" style="width: 450px;">
@@ -80,24 +81,56 @@
         {% endif %}
 
         <!-- PLACE ORDER -->
-        <form method="post" action="{% url 'place_order' %}">
-            {% csrf_token %}
-
-            {% if details.address %}
-                <button type="submit"
-                        class="btn btn-primary w-100 fw-bold">
-                    Place Order
-                </button>
-            {% else %}
-                <button type="button"
-                        class="btn btn-secondary w-100 fw-bold"
-                        disabled>
-                    Add address to place order
-                </button>
-            {% endif %}
+        {% if details.address %}
+        <button type="button" class="btn btn-success w-100 mt-3" onclick="makePayment()">
+            Make Payment
+        </button>
+        {% else %}
+        <button class="btn btn-secondary w-100" disabled>Add address first</button>
+        {% endif %}
         </form>
 
     </div>
 </div>
 
+
+
+
+
+
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+function makePayment() {
+    fetch("{% url 'create_payment' %}")
+    .then(res => res.json())
+    .then(data => {
+        var options = {
+            "key": data.key,
+            "amount": data.amount,
+            "currency": data.currency,
+            "order_id": data.order_id,
+            "name": "Your Store Name",
+            "description": "Order Payment",
+            "handler": function (response) {
+                fetch("{% url 'verify_payment' %}", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": "{{ csrf_token }}"
+                    },
+                    body: JSON.stringify(response)
+                })
+                .then(r => r.json())
+                .then(result => {
+                    if (result.status === "success") {
+                        window.location.href = result.redirect_url;
+                    }
+                });
+            }
+        };
+        new Razorpay(options).open();
+    });
+}
+</script>
 {% endblock content %}

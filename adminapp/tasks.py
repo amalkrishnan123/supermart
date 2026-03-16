@@ -5,8 +5,8 @@ from django.conf import settings
 def main_fun(email,otp):
     print(email,otp)
     try:
-        subject='verification for supermarket'
-        message=f'welcome to online supermarket..please verify the otp is {otp}'
+        subject=' otp verification for supermarket'
+        message=f'welcome to online supermarket..Your otp is {otp}'
         send_mail(
                     subject,
                     message,

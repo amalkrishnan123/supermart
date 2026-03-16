@@ -1,19 +1,90 @@
 {% extends "navbar.html" %}
 {% block content %}
-<div class="container d-flex justify-content-center mt-5">
-    <div class="card shadow-lg p-4" style="max-width: 380px; width: 100%;">
-        <h4 class="text-center mb-3">OTP Verification</h4>
-        <p class="text-center text-muted">Enter the 6-digit code sent to your email</p>
 
-        <form method="POST">
-            {% csrf_token %}
-            <div class="d-flex justify-content-between otp-container">
-                <input type="text" maxlength="6" class="otp-input" name="otp1" required>
+<div class="container d-flex justify-content-center align-items-center" style="min-height:80vh">
 
-            <button class="btn btn-primary w-100 mt-4">Verify OTP</button>
-        </form>
-    </div>
+<div class="card shadow p-4" style="max-width:400px;width:100%">
+
+<h4 class="text-center mb-3">OTP Verification</h4>
+
+<p class="text-center text-muted">
+Enter the OTP sent to your email
+</p>
+
+
+{% if messages %}
+{% for message in messages %}
+<div class="alert alert-danger text-center">
+{{message}}
+</div>
+{% endfor %}
+{% endif %}
+
+
+<form method="POST">
+{% csrf_token %}
+
+<input type="text" name="otp" maxlength="6" class="form-control text-center" placeholder="Enter OTP" required>
+
+<div class="text-center mt-3">
+<span class="text-danger fw-bold">
+Time Remaining : <span id="timer"></span>
+</span>
+</div>
+
+<button class="btn btn-primary w-100 mt-3">
+Verify OTP
+</button>
+
+</form>
+
+
+<a href="{% url 'resend_otp' %}" id="resendBtn" class="btn btn-success w-100 mt-3" style="display:none;">
+Resend OTP
+</a>
+
+
+<a href="{% url 'register_user' %}" class="btn btn-outline-secondary w-100 mt-2">
+Back to Registration
+</a>
+
+</div>
 </div>
 
 
-{% endblock content %}
+<script>
+
+let timeLeft = {{ remaining_seconds|default:0 }};
+
+let timerDisplay = document.getElementById("timer");
+let resendBtn = document.getElementById("resendBtn");
+
+function updateTimer(){
+
+if(timeLeft <= 0){
+
+timerDisplay.innerHTML="Expired";
+resendBtn.style.display="block";
+return;
+
+}
+
+let minutes = Math.floor(timeLeft / 60);
+let seconds = timeLeft % 60;
+
+minutes = minutes < 10 ? "0" + minutes : minutes;
+seconds = seconds < 10 ? "0" + seconds : seconds;
+
+timerDisplay.innerHTML = minutes + ":" + seconds;
+
+timeLeft--;
+
+}
+
+setInterval(updateTimer,1000);
+
+updateTimer();
+
+</script>
+
+{% endblock %}

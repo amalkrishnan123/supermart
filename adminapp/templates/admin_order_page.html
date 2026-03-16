@@ -17,6 +17,45 @@
 <div class="container mt-4">
 
     <h4 class="mb-3 fw-semibold">Order Management</h4>
+    <div class="mb-3 d-flex flex-wrap gap-2">
+
+<a href="{% url 'admin_order_page' %}"
+class="btn btn-outline-dark btn-sm
+{% if not request.GET.status %}active{% endif %}">
+All
+</a>
+
+<a href="?status=pending"
+class="btn btn-outline-warning btn-sm
+{% if request.GET.status == 'pending' %}active{% endif %}">
+Pending
+</a>
+
+<a href="?status=confirmed"
+class="btn btn-outline-info btn-sm
+{% if request.GET.status == 'confirmed' %}active{% endif %}">
+Confirmed
+</a>
+
+<a href="?status=shipped"
+class="btn btn-outline-primary btn-sm
+{% if request.GET.status == 'shipped' %}active{% endif %}">
+Shipped
+</a>
+
+<a href="?status=delivered"
+class="btn btn-outline-success btn-sm
+{% if request.GET.status == 'delivered' %}active{% endif %}">
+Delivered
+</a>
+
+<a href="?status=cancelled"
+class="btn btn-outline-danger btn-sm
+{% if request.GET.status == 'cancelled' %}active{% endif %}">
+Cancelled
+</a>
+
+</div>
 
     <div class="table-responsive">
         <table class="table table-bordered align-middle text-center">
@@ -26,6 +65,8 @@
                     <th>Email</th>
                     <th>Mobile</th>
                     <th>Order ID</th>
+                    <th>Product Name</th>
+                    <th>Amount</th>
                     <th>Status</th>
                     <th>Action</th>
                 </tr>
@@ -40,6 +81,9 @@
                     <td>
                         <span class="fw-semibold">{{ i.order_id }}</span>
                     </td>
+                    <td>{{ i.product.name }}</td>
+                    <td>{{ i.quantity }}</td>
+                    <td>{{ i.total_amount }}</td>
 
                     <!-- STATUS BADGE -->
                     <td>
@@ -55,31 +99,31 @@
 
                     <!-- ACTION -->
                     <td>
-                        {% if i.status == 'pending' %}
-                            <a href="{% url 'admin_status_update' i.user.user.id i.product.id 'confirmed' %}"
-                               class="btn btn-outline-success btn-sm action-btn">
-                                Confirm
-                            </a>
+    {% if i.status == 'pending' %}
+        <a href="{% url 'admin_status_update' i.id 'confirmed' %}"
+           class="btn btn-outline-success btn-sm action-btn">
+            Confirm
+        </a>
 
-                        {% elif i.status == 'confirmed' %}
-                            <a href="{% url 'admin_status_update' i.user.user.id i.product.id 'shipped' %}"
-                               class="btn btn-outline-warning btn-sm action-btn">
-                                Ship
-                            </a>
+    {% elif i.status == 'confirmed' %}
+        <a href="{% url 'admin_status_update' i.id 'shipped' %}"
+           class="btn btn-outline-warning btn-sm action-btn">
+            Ship
+        </a>
 
-                        {% elif i.status == 'shipped' %}
-                            <a href="{% url 'admin_status_update' i.user.user.id i.product.id 'delivered' %}"
-                               class="btn btn-outline-primary btn-sm action-btn">
-                                Deliver
-                            </a>
+    {% elif i.status == 'shipped' %}
+        <a href="{% url 'admin_status_update' i.id 'delivered' %}"
+           class="btn btn-outline-primary btn-sm action-btn">
+            Deliver
+        </a>
 
-                        {% elif i.status == 'cancelled' %}
-                            <span class="badge bg-danger">Cancelled</span>
+    {% elif i.status == 'cancelled' %}
+        <span class="badge bg-danger">Cancelled</span>
 
-                        {% elif i.status == 'delivered' %}
-                            <span class="badge bg-success">Delivered</span>
-                        {% endif %}
-                    </td>
+    {% elif i.status == 'delivered' %}
+        <span class="badge bg-success">Delivered</span>
+    {% endif %}
+</td>
                 </tr>
                 {% empty %}
                 <tr>
@@ -94,4 +138,54 @@
 
 </div>
 
+
+<!-- PAGINATION -->
+<div class="d-flex justify-content-center mt-4">
+
+    <nav>
+        <ul class="pagination">
+
+            {% if user.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?status={{ request.GET.status }}&page=1">
+                    First
+                </a>
+            </li>
+
+            <li class="page-item">
+                <a class="page-link"
+                   href="?status={{ request.GET.status }}&page={{ user.previous_page_number }}">
+                    Previous
+                </a>
+            </li>
+            {% endif %}
+
+
+            <li class="page-item active">
+                <span class="page-link">
+                    Page {{ user.number }} of {{ user.paginator.num_pages }}
+                </span>
+            </li>
+
+
+            {% if user.has_next %}
+            <li class="page-item">
+                <a class="page-link"
+                   href="?status={{ request.GET.status }}&page={{ user.next_page_number }}">
+                    Next
+                </a>
+            </li>
+
+            <li class="page-item">
+                <a class="page-link"
+                   href="?status={{ request.GET.status }}&page={{ user.paginator.num_pages }}">
+                    Last
+                </a>
+            </li>
+            {% endif %}
+
+        </ul>
+    </nav>
+
+</div>
 {% endblock content %}

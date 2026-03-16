@@ -31,10 +31,6 @@
 {% block content %}
 
 <style>
-/* ===== RESET ===== */
-* { box-sizing: border-box; }
-html, body { margin: 0; padding: 0; overflow-x: hidden; }
-
 /* ===== BACKGROUND ===== */
 body {
     min-height: 100vh;
@@ -42,29 +38,66 @@ body {
 }
 
 /* ===== PAGE WRAPPER ===== */
+/* IMPORTANT: Do NOT use margin-top here */
 .page-wrapper {
-    margin-top: 80px;
-    padding: 0 20px;
+    padding: 20px;
+}
+
+/* ===== CATEGORY STRIP ===== */
+.category-strip {
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+
+    /* Hide scrollbar */
+    scrollbar-width: none;        /* Firefox */
+    -ms-overflow-style: none;     /* IE/Edge */
+}
+
+.category-strip::-webkit-scrollbar {
+    display: none;                /* Chrome/Safari */
+}
+
+.category-strip-wrapper {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 18px;
+    padding: 8px 0;
+    width: max-content;           /* IMPORTANT */
+}
+
+.category-strip-item {
+    flex: 0 0 auto;               /* Prevent shrinking */
+    min-width: 80px;
+    text-align: center;
+    color: #e5e7eb;
+    text-decoration: none;
+}
+
+.category-strip-item img {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
 }
 
 /* ===== FILTER BAR ===== */
 .filter-bar {
     background: rgba(0,0,0,.75);
-    padding: 16px;
-    border-radius: 14px;
-    margin-bottom: 28px;
+    padding: 14px;
+    border-radius: 12px;
+    margin-bottom: 26px;
 }
 
 .filter-bar h5 {
     color: #ffc107;
     font-weight: 700;
-    margin-bottom: 14px;
+    margin-bottom: 12px;
 }
 
 .filter-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 14px;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
 }
 
 .filter-bar label {
@@ -76,6 +109,7 @@ body {
     background: #020617;
     color: #fff;
     border: 1px solid rgba(255,255,255,.2);
+    height: 38px;
 }
 
 .filter-bar .form-select:focus {
@@ -83,11 +117,20 @@ body {
     box-shadow: none;
 }
 
+/* APPLY FILTER BUTTON */
 .filter-bar button {
     background: #ffc107;
     color: #000;
     font-weight: 700;
     border: none;
+    height: 38px;
+    border-radius: 8px;
+    transition: .2s ease;
+}
+
+.filter-bar button:hover {
+    background: #ffca2c;
+    transform: translateY(-2px);
 }
 
 /* ===== PRODUCT GRID ===== */
@@ -95,6 +138,7 @@ body {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
     gap: 26px;
+    margin-top:10px;
 }
 
 /* ===== PRODUCT CARD ===== */
@@ -110,12 +154,26 @@ body {
     transform: translateY(-6px);
     box-shadow: 0 14px 32px rgba(0,0,0,.25);
 }
-
+.active-category {
+    color: #ffc107 !important;
+    font-weight: 700;
+}
 .product-img {
+    width: 100%;
     height: 190px;
-    object-fit: contain;
-    padding: 16px;
+    object-fit: cover;
     background: #fafafa;
+}
+
+.wishlist-btn {
+    z-index: 5;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 50%;
+    padding: 6px 8px;
+}
+
+.wishlist-btn:hover {
+    transform: scale(1.1);
 }
 
 /* ===== PAGINATION ===== */
@@ -125,7 +183,6 @@ body {
     border: none;
     margin: 0 4px;
     border-radius: 8px;
-    font-weight: 500;
 }
 
 .pagination-warning .page-item.active .page-link {
@@ -143,12 +200,44 @@ body {
 
 <div class="page-wrapper">
 
-    <!-- ===== FILTER BAR ===== -->
+<!-- ===== CATEGORY STRIP ===== -->
+<div class="category-strip">
+    <div class="category-strip-wrapper">
+
+        <!-- ALL -->
+        <a href="{% url 'main_home' %}"
+           class="category-strip-item {% if not request.GET.category %}active-category{% endif %} ">
+            <img src="{% static 'images/all.jpg' %}" width="40">
+            <span>All</span>
+        </a>
+
+        <!-- DYNAMIC CATEGORIES -->
+        {% for c in cat %}
+        <a href="{% url 'main_home' %}?category={{ c.id }}"
+           class="category-strip-item 
+           {% if request.GET.category == c.id|stringformat:'s' %}active-category{% endif %}">
+
+            {% if c.name|lower == "fruits" %}
+                <img src="{% static 'images/pine.jpg' %}" width="40">
+            {% elif c.name|lower == "vegetable" %}
+                <img src="{% static 'images/pump.jpg' %}" width="40">
+            {% elif c.name|lower == "toys" %}
+                <img src="{% static 'images/toy.jpg' %}" width="40">
+            {% elif c.name|lower == "cosmetics" %}
+                <img src="{% static 'images/cos.jpg' %}" width="40">
+            {% endif %}
+
+            <span>{{ c.name }}</span>
+        </a>
+        {% endfor %}
+
+    </div>
+</div>
+
+    {% comment %} <!-- ===== FILTER BAR ===== -->
     <div class="filter-bar">
         <form method="get">
-
             <h5>Filter Products</h5>
-
             <div class="filter-grid">
 
                 <div>
@@ -181,10 +270,10 @@ body {
                     <label>Price</label>
                     <select name="price" class="form-select">
                         <option value="">All</option>
-                        <option value="1" {% if request.GET.price == '1' %}selected{% endif %}>₹500 – ₹1500</option>
-                        <option value="2" {% if request.GET.price == '2' %}selected{% endif %}>₹1500 – ₹2500</option>
-                        <option value="3" {% if request.GET.price == '3' %}selected{% endif %}>₹2500 – ₹3500</option>
-                        <option value="4" {% if request.GET.price == '4' %}selected{% endif %}>Above ₹3500</option>
+                        <option value="1">₹500 – ₹1500</option>
+                        <option value="2">₹1500 – ₹2500</option>
+                        <option value="3">₹2500 – ₹3500</option>
+                        <option value="4">Above ₹3500</option>
                     </select>
                 </div>
 
@@ -194,23 +283,12 @@ body {
 
             </div>
         </form>
-    </div>
+    </div> {% endcomment %}
 
     <!-- ===== PRODUCTS ===== -->
     <div class="product-grid">
-
         {% for i in product %}
         <div class="card product-card position-relative">
-
-            <a href="{% url 'toggle_wishlist' i.id %}"
-               class="btn wishlist-btn position-absolute top-0 end-0 m-2">
-                {% if i.id in wishlist_ids %}
-                    <i class="bi bi-heart-fill text-danger"></i>
-                {% else %}
-                    <i class="bi bi-heart"></i>
-                {% endif %}
-            </a>
-
             <a href="{% url 'product_desc' i.id %}" class="text-decoration-none text-dark">
                 <img src="{{ i.image.url }}" class="product-img w-100">
                 <div class="card-body">
@@ -219,12 +297,8 @@ body {
                     <div class="fw-bold mt-2">₹ {{ i.price }}</div>
                 </div>
             </a>
-
         </div>
-        {% empty %}
-        <p class="text-center text-light mt-5">No products found.</p>
         {% endfor %}
-
     </div>
 
     <!-- ===== PAGINATION (FIXED) ===== -->

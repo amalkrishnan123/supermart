@@ -159,9 +159,9 @@ body {
                 </a>
 
                 {% if item.product.stock > 0 %}
-                    <a href="{% url 'order_confirm' %}"
-                       class="btn btn-success btn-sm w-100">
-                        Buy Now
+                    <a href="{% url 'buy_now_single_item' item.id %}"
+                    class="btn btn-warning btn-sm w-100">
+                     Buy Now
                     </a>
                 {% else %}
                     <button class="btn btn-secondary btn-sm w-100" disabled>
@@ -184,10 +184,11 @@ body {
         <h4>Cart Total</h4>
         <p class="fw-bold fs-5">₹ {{ total_amount }}</p>
 
-        {% if can_checkout %}
-            <a href="{% url 'order_confirm' %}" class="btn btn-primary w-100">
-                Proceed to Checkout
-            </a>
+        {% if can_checkout and cart_items %}
+    <a href="{% url 'proceed_full_cart_checkout' %}" 
+       class="btn btn-primary w-100">
+        Proceed to Checkout ₹ {{ total_amount|floatformat:2 }}
+    </a>
         {% else %}
             <button class="btn btn-secondary w-100" disabled>
                 Proceed to Checkout

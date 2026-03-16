@@ -1,0 +1,104 @@
+{% extends "navbar.html" %}
+
+{% block content %}
+<div class="container mt-4">
+
+    <!-- Rating Summary -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body text-center">
+
+            {% if rating.rate %}
+                <h4 class="mb-1">
+                    <span class="badge bg-warning text-dark px-3 py-2 fs-6">
+                        <i class="bi bi-star-fill"></i>
+                        {{ rating.rate|floatformat:1 }}
+                    </span>
+                </h4>
+                <p class="text-muted mb-0">
+                    Based on {{ rating.count }} review{{ rating.count|pluralize }}
+                </p>
+            {% else %}
+                <p class="text-warning fw-bold mb-0">
+                    No ratings yet
+                </p>
+            {% endif %}
+
+        </div>
+    </div>
+
+    <!-- Reviews Section -->
+    <h5 class="mb-3">Customer Reviews</h5>
+
+    {% for i in reviews %}
+        <div class="card shadow-sm mb-3">
+            <div class="card-body">
+
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h6 class="mb-0 fw-bold">
+                        {{ i.customer.user.username|upper }}
+                    </h6>
+
+                    <span class="badge bg-success">
+                        <i class="bi bi-star-fill"></i> {{ i.rating }}
+                    </span>
+                </div>
+
+                <p class="text-muted mb-0">
+                    {{ i.review }}
+                </p>
+
+            </div>
+        </div>
+    {% empty %}
+        <div class="alert alert-secondary text-center">
+            No reviews available for this product.
+        </div>
+    {% endfor %}
+
+{% if reviews.has_other_pages %}
+<nav class="d-flex justify-content-center mt-4">
+    <ul class="pagination">
+
+        {% if reviews.has_previous %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ reviews.previous_page_number }}">
+                Previous
+            </a>
+        </li>
+        {% else %}
+        <li class="page-item disabled">
+            <span class="page-link">Previous</span>
+        </li>
+        {% endif %}
+
+        {% for num in reviews.paginator.page_range %}
+            {% if reviews.number == num %}
+                <li class="page-item active">
+                    <span class="page-link">{{ num }}</span>
+                </li>
+            {% else %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                </li>
+            {% endif %}
+        {% endfor %}
+
+        {% if reviews.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ reviews.next_page_number }}">
+                Next
+            </a>
+        </li>
+        {% else %}
+        <li class="page-item disabled">
+            <span class="page-link">Next</span>
+        </li>
+        {% endif %}
+
+    </ul>
+</nav>
+{% endif %}
+
+
+</div>
+{% endblock content %}

@@ -3,8 +3,8 @@ from . import views
 
 
 urlpatterns = [
-    path('admin_dashboard/',views.admin_dashboard,name='admin_dash'),
-    path('product_page/',views.admin_product_page,name='all_products'),
+    path('admin_dashboard/',views.admin_dashboard,name='users'),
+    path('product_page/',views.admin_product_page,name='admin_dash'),
     path('edit_product/<int:id>',views.admin_edit_product,name='edit_product'),
     path('add_product/',views.admin_add_product,name='add_product'),
     path('delete_product/<int:id>',views. admin_delete_product,name='delete_products'),
@@ -26,7 +26,9 @@ urlpatterns = [
     path('unblock_user/<int:id>',views.admin_unblock_user,name='unblockuser'),
     path('logout_admin/',views.admin_logout,name='logout_admin'),
     path('admin_orders/',views.admin_orders,name='admin_order_page'),
-    path('admin_update_status/<int:id>/<int:pro_id>/<str:status>/',views.admin_update_status,name='admin_status_update'),
+    path('admin_update_status/<int:order_id>/<str:status>/',views.admin_update_status,name='admin_status_update'),
+    path('statistics/',views.statistics,name='statisticss'),
+    path('download-sales-report/', views.download_sales_report, name='sales_report_pdf')
     
 
     

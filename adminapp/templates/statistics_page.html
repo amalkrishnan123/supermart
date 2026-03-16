@@ -1,0 +1,241 @@
+{% extends "base_page.html" %}
+{% block content %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+canvas{
+max-height:250px;
+}
+.dashboard-card{
+transition: transform 0.2s ease, box-shadow 0.2s ease;
+cursor: pointer;
+border-radius:12px;
+}
+
+.dashboard-card:hover{
+transform: translateY(-6px);
+box-shadow:0 10px 25px rgba(0,0,0,0.2);
+}
+
+.card-link{
+text-decoration:none;
+color:inherit;
+}
+
+</style>
+
+<div class="container mt-4">
+
+<div class="row g-4">
+
+<!-- Card 1 -->
+<div class="col-md-3">
+<a href="{% url 'admin_dash' %}" class="card-link">
+<div class="card dashboard-card shadow text-center">
+<div class="card-body">
+<h5 class="card-title">Total Products</h5>
+<h3 class="text-primary">{{products}}</h3>
+</div>
+</div>
+</a>
+</div>
+
+<!-- Card 2 -->
+<div class="col-md-3">
+<a href="{% url 'users' %}" class="card-link">
+<div class="card dashboard-card shadow text-center">
+<div class="card-body">
+<h5 class="card-title">Total Users</h5>
+<h3 class="text-success">{{totalusers}}</h3>
+</div>
+</div>
+</a>
+</div>
+
+<!-- Card 3 -->
+<div class="col-md-3">
+<a href="{% url 'admin_order_page' %}" class="card-link">
+<div class="card dashboard-card shadow text-center">
+<div class="card-body">
+<h5 class="card-title">Total Orders</h5>
+<h3 class="text-warning">{{orders}}</h3>
+</div>
+</div>
+</a>
+</div>
+
+<!-- Card 4 -->
+<div class="col-md-3">
+<div class="card dashboard-card shadow text-center">
+<div class="card-body">
+<h5 class="card-title">Total Revenue</h5>
+<h3 class="text-danger">{{revenue}}</h3>
+</div>
+</div>
+</div>
+
+<!-- Card 5 -->
+<div class="col-md-3">
+    <a href="{% url 'users' %}?is_active=True" class="card-link">
+<div class="card dashboard-card shadow text-center">
+<div class="card-body">
+<h5 class="card-title">Active Users</h5>
+<h3 class="text-info">{{active_user}}</h3>
+</div>
+</div>
+</a>
+</div>
+
+<!-- Card 6 -->
+<div class="col-md-3">
+<a href="{% url 'users' %}?is_active=False" class="card-link">
+<div class="card dashboard-card shadow text-center">
+<div class="card-body">
+<h5 class="card-title">Blocked Users</h5>
+<h3 class="text-danger">{{blocked_users}}</h3>
+</div>
+</div>
+</a>
+</div>
+
+<!-- Card 7 -->
+<div class="col-md-3">
+<a href="{% url 'admin_order_page' %}?status=pending" class="card-link">
+<div class="card dashboard-card shadow text-center">
+<div class="card-body">
+<h5 class="card-title">Pending Orders</h5>
+<h3 class="text-warning">{{pending_orders}}</h3>
+</div>
+</div>
+</a>
+</div>
+
+<!-- Card 8 -->
+<div class="col-md-3">
+<a href="{% url 'admin_order_page' %}?status=delivered" class="card-link">
+<div class="card dashboard-card shadow text-center">
+<div class="card-body">
+<h5 class="card-title">Delivered Orders</h5>
+<h3 class="text-success">{{delivered_orders}}</h3>
+</div>
+</div>
+</a>
+</div>
+
+</div>
+
+</div>
+
+<form method="GET" class="mb-4">
+
+<select name="filter" onchange="this.form.submit()" class="form-select w-auto">
+
+<option value="7days" {% if filter_type == "7days" %}selected{% endif %}>
+Last 7 Days
+</option>
+
+<option value="30days" {% if filter_type == "30days" %}selected{% endif %}>
+Last 30 Days
+</option>
+
+<option value="year" {% if filter_type == "year" %}selected{% endif %}>
+Yearly
+</option>
+
+</select>
+
+</form>
+
+<div class="container mt-5">
+
+<div class="row">
+
+<!-- Sales Overview -->
+<div class="col-md-6">
+<h5 class="text-center">Sales Overview</h5>
+<canvas id="salesChart" height="200"></canvas>
+</div>
+
+<!-- Order Status -->
+<div class="col-md-6">
+<h5 class="text-center">Order Status Distribution</h5>
+<canvas id="statusChart" height="200"></canvas>
+</div>
+
+</div>
+
+<div class="row mt-4">
+
+<!-- Top Selling Products -->
+<div class="col-md-6 mx-auto">
+<h5 class="text-center">Top Selling Products</h5>
+<canvas id="productChart" height="200"></canvas>
+</div>
+
+</div>
+
+</div>
+<div class="mt-4">
+
+<a href="{% url 'sales_report_pdf' %}?filter=7days"
+class="btn btn-outline-primary">
+Download 7 Days Report
+</a>
+
+<a href="{% url 'sales_report_pdf' %}?filter=30days"
+class="btn btn-outline-success">
+Download 30 Days Report
+</a>
+
+<a href="{% url 'sales_report_pdf' %}?filter=year"
+class="btn btn-outline-danger">
+Download Yearly Report
+</a>
+
+</div>
+<script>
+new Chart(document.getElementById("salesChart"), {
+type: 'line',
+data: {
+labels: {{ sale_labels|safe }},
+datasets: [{
+label: "Sales Revenue",
+data: {{ sale_values|safe }},
+borderColor: "#0d6efd",
+backgroundColor: "rgba(13,110,253,0.1)",
+fill: true,
+tension: 0.3
+}]
+}
+});
+
+new Chart(document.getElementById("statusChart"), {
+type: 'pie',
+data: {
+labels: {{ status_labels|safe }},
+datasets: [{
+data: {{ status_counts|safe }},
+backgroundColor: [
+"#ffc107",
+"#0d6efd",
+"#20c997",
+"#198754",
+"#dc3545"
+]
+}]
+}
+});
+
+new Chart(document.getElementById("productChart"), {
+type: 'bar',
+data: {
+labels: {{ product_labels|safe }},
+datasets: [{
+label: "Units Sold",
+data: {{ product_sales|safe }},
+backgroundColor: "#198754"
+}]
+}
+});
+</script>
+
+{% endblock %}

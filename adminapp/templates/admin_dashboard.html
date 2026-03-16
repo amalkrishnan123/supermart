@@ -1,58 +1,180 @@
 {% extends "base_page.html" %}
 {% block content %}
-<h1>Dashboard</h1>
-<div class="container mt-4">
 
-    <div class="card shadow-lg border-0">
-        <div class="card-header bg-primary text-white text-center">
-            <h4 class="mb-0">User List</h4>
-        </div>
+<h3 class="mb-3">Users</h3>
 
-        <div class="card-body p-0">
-            <table class="table table-hover table-striped mb-0 align-middle">
-                <thead class="table-dark text-center">
-                    <tr>
-                        <th>Id</th>
-                        <th>Username</th>
-                        <th>Email Id</th>
-                        <th>Mobile</th>
-                        <th>Status</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
+<div class="container-fluid mt-3">
 
-                <tbody class="text-center">
-                    {% for i in form %}
-                    <tr>
-                        <td>{{ i.id }}</td>
-                        <td>{{ i.user.username }}</td>
-                        <td>{{ i.user.email }}</td>
-                        <td>{{ i.mobile }}</td>
-                        <td>
-                            {% if i.is_active %}
-                                <span class="badge bg-success">Active</span>
-                            {% else %}
-                                <span class="badge bg-danger">Blocked</span>
-                            {% endif %}
-                        </td>
-                        <td>    
-                            {% if i.is_active%}
-                            <a href="{% url "blockuser" i.id%}" class="btn btn-sm btn-outline-primary ms-2">
-                                Block</a>
-                            {% else %}
-                            <a href="{% url "unblockuser" i.id %}" class="btn btn-sm btn-outline-primary ms-2">Unlock</a>
-                            {% endif %}
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
+<div class="card shadow-lg border-0">
 
-            </table>
-        </div>
-    </div>
+<div class="card-header bg-primary text-white text-center">
+<h5 class="mb-0">User List</h5>
+</div>
+
+<div class="card-body">
+
+<!-- SEARCH + FILTER -->
+<div class="row g-2 mb-3">
+
+<div class="col-12 col-md-6">
+<form method="GET" class="d-flex flex-wrap gap-2">
+
+<input type="text"
+name="search"
+value="{{ search }}"
+class="form-control"
+placeholder="Search name, email or mobile">
+
+<button class="btn btn-primary">
+<i class="bi bi-search"></i>
+</button>
+
+<a href="{% url 'users' %}" class="btn btn-secondary">
+<i class="bi bi-x-circle"></i>
+</a>
+
+</form>
+</div>
+
+
+<div class="col-12 col-md-6 text-md-end">
+<form method="GET" class="d-flex flex-wrap justify-content-md-end gap-2">
+
+<input type="hidden" name="search" value="{{ search }}">
+
+<select name="sort" onchange="this.form.submit()" class="form-select w-auto">
+<option value="latest" {% if sort == "latest" %}selected{% endif %}>Latest</option>
+<option value="oldest" {% if sort == "oldest" %}selected{% endif %}>Oldest</option>
+</select>
+
+<select name="status" onchange="this.form.submit()" class="form-select w-auto">
+<option value="">All Users</option>
+<option value="active" {% if status == "active" %}selected{% endif %}>Active</option>
+<option value="blocked" {% if status == "blocked" %}selected{% endif %}>Blocked</option>
+</select>
+
+</form>
+</div>
 
 </div>
+
+
+<!-- RESPONSIVE TABLE -->
+<div class="table-responsive">
+
+<table class="table table-hover table-striped align-middle">
+
+<thead class="table-dark text-center">
+<tr>
+<th>Id</th>
+<th>Username</th>
+<th>Email</th>
+<th>Mobile</th>
+<th>Joined</th>
+<th>Year</th>
+<th>Status</th>
+<th>Action</th>
+</tr>
+</thead>
+
+<tbody class="text-center">
+
+{% for i in form %}
+
+<tr>
+
+<td>{{ i.id }}</td>
+<td>{{ i.user.username }}</td>
+<td>{{ i.user.email }}</td>
+<td>{{ i.mobile }}</td>
+
+<td>{{ i.user.date_joined|date:"d M Y" }}</td>
+<td>{{ i.user.date_joined|date:"Y" }}</td>
+
+<td>
+{% if i.is_active %}
+<span class="badge bg-success">Active</span>
+{% else %}
+<span class="badge bg-danger">Blocked</span>
+{% endif %}
+</td>
+
+<td>
+{% if i.is_active %}
+<a href="{% url 'blockuser' i.id %}" class="btn btn-sm btn-outline-primary">
+Block
+</a>
+{% else %}
+<a href="{% url 'unblockuser' i.id %}" class="btn btn-sm btn-outline-success">
+Unlock
+</a>
+{% endif %}
+</td>
+
+</tr>
+
+{% endfor %}
+
+</tbody>
+</table>
+
+</div>
+
+
+<!-- PAGINATION -->
+<nav class="mt-3">
+
+<ul class="pagination justify-content-center flex-wrap">
+
+{% if form.has_previous %}
+
+<li class="page-item">
+<a class="page-link"
+href="?page={{ form.previous_page_number }}&search={{ search }}&sort={{ sort }}&status={{ status }}">
+Previous
+</a>
+</li>
+
+{% endif %}
+
+{% for num in form.paginator.page_range %}
+
+{% if form.number == num %}
+
+<li class="page-item active">
+<span class="page-link">{{ num }}</span>
+</li>
+
+{% elif num > form.number|add:'-3' and num < form.number|add:'3' %}
+
+<li class="page-item">
+<a class="page-link"
+href="?page={{ num }}&search={{ search }}&sort={{ sort }}&status={{ status }}">
+{{ num }}
+</a>
+</li>
+
+{% endif %}
+
+{% endfor %}
+
+{% if form.has_next %}
+
+<li class="page-item">
+<a class="page-link"
+href="?page={{ form.next_page_number }}&search={{ search }}&sort={{ sort }}&status={{ status }}">
+Next
+</a>
+</li>
+
+{% endif %}
+
+</ul>
+
+</nav>
+
+</div>
+</div>
+</div>
+
 {% endblock %}
-
-
-

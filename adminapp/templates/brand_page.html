@@ -22,7 +22,47 @@
             <i class="bi bi-plus-circle me-1"></i> Add Brand
         </a>
     </div>
+<div class="card mb-3 shadow-sm">
+<div class="card-body">
 
+<form method="get" class="row g-2">
+
+<div class="col-md-4">
+<select name="category" class="form-select">
+<option value="">All Categories</option>
+
+{% for c in categories %}
+<option value="{{ c.id }}"
+{% if selected_category == c.id|stringformat:"s" %}selected{% endif %}>
+{{ c.name }}
+</option>
+{% endfor %}
+
+</select>
+</div>
+
+<div class="col-md-2">
+<button class="btn btn-primary w-100">
+Filter
+</button>
+</div>
+
+<div class="col-md-2">
+<a href="{% url 'all_brand' %}" class="btn btn-secondary w-100">
+Reset
+</a>
+</div>
+
+<div class="col-md-2">
+<a href="{% url 'all_brand' %}?is_available=False" class="btn btn-danger w-100">
+Blocked Brands
+</a>
+</div>
+
+</form>
+
+</div>
+</div>
     <!-- BRAND TABLE -->
     <div class="card shadow-sm">
         <div class="card-body p-0">
@@ -171,4 +211,49 @@
 
 </div>
 
+<div class="d-flex justify-content-center mt-4">
+
+<nav>
+<ul class="pagination">
+
+{% if brand.has_previous %}
+<li class="page-item">
+<a class="page-link"
+href="?category={{request.GET.category}}&page=1">First</a>
+</li>
+
+<li class="page-item">
+<a class="page-link"
+href="?category={{request.GET.category}}&page={{brand.previous_page_number}}">
+Previous
+</a>
+</li>
+{% endif %}
+
+<li class="page-item active">
+<span class="page-link">
+Page {{ brand.number }} of {{ brand.paginator.num_pages }}
+</span>
+</li>
+
+{% if brand.has_next %}
+<li class="page-item">
+<a class="page-link"
+href="?category={{request.GET.category}}&page={{brand.next_page_number}}">
+Next
+</a>
+</li>
+
+<li class="page-item">
+<a class="page-link"
+href="?category={{request.GET.category}}&page={{brand.paginator.num_pages}}">
+Last
+</a>
+</li>
+{% endif %}
+
+</ul>
+</nav>
+
+</div>
 {% endblock content %}

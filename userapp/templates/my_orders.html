@@ -141,12 +141,14 @@ body {
                     {{ order.created_at|date:"d M Y, h:i A" }}
                 </small>
 
-                {% if order.status == 'pending' %}
-                <a href="{% url 'admin_status_update' order.user.user.id order.product.id 'cancelled' %}"
-                   class="btn btn-outline-danger btn-sm">
-                    Cancel
-                </a>
-                {% endif %}
+                {% if order.status != 'delivered' and order.status != 'cancelled' %}
+<form method="post" action="{% url 'cancel_order' order.id %}">
+    {% csrf_token %}
+    <button class="btn btn-outline-danger btn-sm">
+        Cancel
+    </button>
+</form>
+{% endif %}
                 {% if order.status == 'delivered' %}
                 <a href="{% url "review_page" order.product.id %}" class="btn btn-outline-primary btn-sm">Review</a>
                 {% endif %}

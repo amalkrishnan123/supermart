@@ -3,19 +3,33 @@ from .models import CartProduct,Cart,Wishlist
 from adminapp.models import Product,Category,Brand
 from django.shortcuts import get_object_or_404
 from django.contrib import messages
-
+from userapp.models import ReviewModel
+from django.db.models import Avg,Count
+from django.core.paginator import Paginator
 
 # Create your views here.
 def product_details(request, id):
+
     product = Product.objects.filter(id=id, is_available=True).first()
+
     cart_item = None
     wishlist_ids = []
+    related_products = []
+
+    if product:
+        related_products = Product.objects.filter(
+            category=product.category,
+            is_available=True
+        ).exclude(id=product.id)[:4]   # limit 4 products
+
     if request.user.is_authenticated:
         cart, created = Cart.objects.get_or_create(user=request.user)
+
         wishlist_ids = list(
             Wishlist.objects.filter(user=request.user)
             .values_list('product_id', flat=True)
         )
+
         cart_item = CartProduct.objects.filter(
             cart=cart,
             product_id=id
@@ -28,10 +42,9 @@ def product_details(request, id):
             'product': product,
             'item': cart_item,
             'wishlist_ids': wishlist_ids,
+            'related_products': related_products
         }
     )
-
-
 def cart_page(request):
     if not request.user.is_authenticated:
         return redirect('login_view')
@@ -220,4 +233,10 @@ def decrease_qty_buy(request, id):
         item.save()
     return redirect('buy_now',item.product.id)
 
-
+def ratings_reviews(request,id):
+    reviews=ReviewModel.objects.filter(product__id=id).order_by('id')
+    rating=reviews.aggregate(rate=Avg('rating'),count=Count('rating'))
+    paginater=Paginator(reviews,5)
+    page=request.GET.get('page')
+    reviews=paginater.get_page(page)
+    return render(request,'ratings_reviews.html',{'rating':rating,'reviews':reviews})
